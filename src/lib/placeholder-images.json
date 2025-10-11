@@ -1,3 +1,58 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "serum-1",
+      "description": "A bottle of facial serum on a sandy background.",
+      "imageUrl": "https://picsum.photos/seed/101/600/800",
+      "imageHint": "facial serum"
+    },
+    {
+      "id": "shampoo-1",
+      "description": "A shampoo bottle with seaweed.",
+      "imageUrl": "https://picsum.photos/seed/102/600/800",
+      "imageHint": "shampoo bottle"
+    },
+    {
+      "id": "cream-1",
+      "description": "A jar of face cream with marine elements.",
+      "imageUrl": "https://picsum.photos/seed/103/600/800",
+      "imageHint": "face cream"
+    },
+    {
+      "id": "body-lotion-1",
+      "description": "A body lotion bottle on a beach.",
+      "imageUrl": "https://picsum.photos/seed/104/600/800",
+      "imageHint": "body lotion"
+    },
+    {
+      "id": "conditioner-1",
+      "description": "A conditioner bottle next to a shell.",
+      "imageUrl": "https://picsum.photos/seed/105/600/800",
+      "imageHint": "conditioner bottle"
+    },
+    {
+      "id": "face-mask-1",
+      "description": "A face mask tube with algae.",
+      "imageUrl": "https://picsum.photos/seed/106/600/800",
+      "imageHint": "face mask"
+    },
+    {
+      "id": "body-wash-1",
+      "description": "A body wash bottle with ocean waves in the background.",
+      "imageUrl": "https://picsum.photos/seed/107/600/800",
+      "imageHint": "body wash"
+    },
+    {
+      "id": "hair-mask-1",
+      "description": "A hair mask jar on wet sand.",
+      "imageUrl": "https://picsum.photos/seed/108/600/800",
+      "imageHint": "hair mask"
+    },
+    {
+      "id": "cleanser-1",
+      "description": "A facial cleanser with water splashing.",
+      "imageUrl": "https://picsum.photos/seed/109/600/800",
+      "imageHint": "facial cleanser"
+    }
+  ]
 }
