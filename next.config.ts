@@ -23,12 +23,19 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https' ,
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },
     ],
+  },
+  devIndicators: {
+    buildActivity: false,
+  },
+  experimental: {
+    // This is required to fix a Next.js bug with Turbopack and cross-origin requests.
+    allowedDevOrigins: ['*'],
   },
 };
 
