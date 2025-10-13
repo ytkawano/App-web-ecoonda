@@ -52,7 +52,7 @@ export const products: Product[] = [
       },
        {
         name: 'Sal Marinho',
-        description: 'Adiciona textura e volume ao cabelo enquanto esfolia suavemente o couro cabeludo.',
+        description: 'Adiciona textura e volume ao cabelo while esfoliando suavemente o couro cabeludo.',
         environmentalImpact: 'Colhido de salinas naturais usando métodos tradicionais e eficientes em termos de energia que preservam o ambiente circundante.',
       },
     ],
@@ -102,7 +102,7 @@ export const products: Product[] = [
     category: 'Cuidado Capilar',
     price: 30.0,
     imageId: 'conditioner-1',
-    description: 'Hidrate e desembarace intensamente seus cabelos com este condicionador cremoso, deixando-os macios и fáceis de pentear.',
+    description: 'Hidrate e desembarace intensamente seus cabelos com este condicionador cremoso, deixando-os macios e fáceis de pentear.',
     ingredients: [
       { name: 'Musgo Irlandês', description: 'Uma alga que proporciona deslizamento e umidade aos cabelos.', environmentalImpact: 'Colhido na natureza com técnicas que garantem o recrescimento.' },
       { name: 'Manteiga de Karité', description: 'Fornece hidratação profunda para os fios de cabelo.', environmentalImpact: 'Proveniente de uma cooperativa de mulheres em Gana que pratica o comércio justo.' }
