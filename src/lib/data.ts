@@ -162,14 +162,14 @@ export const userImpact: UserImpact = {
   returnsMade: 12,
 };
 
-export const impactBadges: ImpactBadge[] = [
-    { name: 'Iniciante Eco', description: 'Fez sua primeira compra sustentável.', icon: Sprout },
-    { name: 'Guerreiro do Plástico', description: 'Economizou 1kg de plástico.', icon: Shield },
-    { name: 'Herói da Reciclagem', description: 'Devolveu 10 embalagens.', icon: Recycle },
-    { name: 'Guardião da Água', description: 'Escolheu 5 produtos conscientes sobre o uso da água.', icon: Droplets },
-    { name: 'Folha Verde', description: 'Alcançou 1000 eco pontos.', icon: Leaf },
-    { name: 'Campeão Ecológico', description: 'Completou 5 desafios.', icon: Award },
-    { name: 'Protetor do Planeta', description: 'Top 1% de usuários eco-conscientes.', icon: Star },
+export const impactBadges: (Omit<ImpactBadge, 'icon'> & { icon: string })[] = [
+    { name: 'Iniciante Eco', description: 'Fez sua primeira compra sustentável.', icon: 'Sprout' },
+    { name: 'Guerreiro do Plástico', description: 'Economizou 1kg de plástico.', icon: 'Shield' },
+    { name: 'Herói da Reciclagem', description: 'Devolveu 10 embalagens.', icon: 'Recycle' },
+    { name: 'Guardião da Água', description: 'Escolheu 5 produtos conscientes sobre o uso da água.', icon: 'Droplets' },
+    { name: 'Folha Verde', description: 'Alcançou 1000 eco pontos.', icon: 'Leaf' },
+    { name: 'Campeão Ecológico', description: 'Completou 5 desafios.', icon: 'Award' },
+    { name: 'Protetor do Planeta', description: 'Top 1% de usuários eco-conscientes.', icon: 'Star' },
 ];
 
 export const userPreferences = {

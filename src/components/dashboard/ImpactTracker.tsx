@@ -16,9 +16,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
 import {
   Tooltip as ShadTooltip,
@@ -26,11 +23,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Sprout, Shield, Recycle, Droplets, Leaf, Award, Star } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface ImpactTrackerProps {
   userImpact: UserImpact;
-  badges: ImpactBadge[];
+  badges: Omit<ImpactBadge, 'icon'> & { icon: string }[];
 }
+
+const iconMap: { [key: string]: LucideIcon } = {
+  Sprout,
+  Shield,
+  Recycle,
+  Droplets,
+  Leaf,
+  Award,
+  Star,
+};
+
 
 const monthlyData = [
   { month: 'Jan', plastic: 150, co2: 0.5 },
@@ -40,13 +50,6 @@ const monthlyData = [
   { month: 'Mai', plastic: 300, co2: 1.1 },
   { month: 'Jun', plastic: 280, co2: 1.0 },
 ];
-
-const pieData = [
-    { name: 'Plástico Economizado (g)', value: 1250 },
-    { name: 'Devoluções Feitas', value: 12 },
-  ];
-  
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
 
 export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps) {
   return (
@@ -134,21 +137,24 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
         <CardContent>
           <TooltipProvider>
             <div className="flex flex-wrap gap-6">
-              {badges.map((badge, index) => (
-                <ShadTooltip key={index}>
-                  <TooltipTrigger>
-                    <div className="flex flex-col items-center gap-2 text-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent bg-accent/10">
-                        <badge.icon className="h-8 w-8 text-accent" />
+              {badges.map((badge, index) => {
+                const Icon = iconMap[badge.icon];
+                return Icon ? (
+                  <ShadTooltip key={index}>
+                    <TooltipTrigger>
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent bg-accent/10">
+                          <Icon className="h-8 w-8 text-accent" />
+                        </div>
+                        <span className="text-xs font-medium">{badge.name}</span>
                       </div>
-                      <span className="text-xs font-medium">{badge.name}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{badge.description}</p>
-                  </TooltipContent>
-                </ShadTooltip>
-              ))}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{badge.description}</p>
+                    </TooltipContent>
+                  </ShadTooltip>
+                ) : null;
+              })}
             </div>
           </TooltipProvider>
         </CardContent>
