@@ -15,6 +15,7 @@ export default function Home() {
             data-ai-hint="ocean waves"
             fill
             className="object-cover"
+            priority
           />
         )}
         <div className="relative z-10 flex h-full flex-col items-center justify-center bg-black/40 p-4">
