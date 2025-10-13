@@ -1,4 +1,4 @@
-import { Leaf, Water, Heart } from 'lucide-react';
+import { Leaf, Waves, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { placeholderImages } from '@/lib/data';
 
@@ -33,7 +33,7 @@ export default function AboutPage() {
 
           <div className="space-y-12">
             <div className="flex flex-col items-center text-center">
-              <Water className="mb-4 h-12 w-12 text-accent" />
+              <Waves className="mb-4 h-12 w-12 text-accent" />
               <h2 className="font-headline text-3xl font-semibold text-primary">
                 ODS 14 – Vida na Água
               </h2>
