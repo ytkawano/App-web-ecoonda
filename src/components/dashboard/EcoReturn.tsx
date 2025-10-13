@@ -10,19 +10,27 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Loader2, QrCode, X } from 'lucide-react';
+import { CheckCircle, Loader2, QrCode, X, Smartphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import QRCode from "react-qr-code";
 
 export default function EcoReturn() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
+  const [isAppQrDialogOpen, setIsAppQrDialogOpen] = useState(false);
   const [scanStep, setScanStep] = useState<'initial' | 'scanning' | 'success'>('initial');
   const { toast } = useToast();
+  const [appUrl, setAppUrl] = useState('');
 
   useEffect(() => {
-    if (isDialogOpen) {
+    if (isReturnDialogOpen) {
       setScanStep('initial');
     }
-  }, [isDialogOpen]);
+  }, [isReturnDialogOpen]);
+
+  useEffect(() => {
+    // This will run on the client and get the correct URL for the QR code
+    setAppUrl(window.location.origin);
+  }, []);
 
   const handleScan = () => {
     setScanStep('scanning');
@@ -32,7 +40,7 @@ export default function EcoReturn() {
   };
 
   const handleClose = () => {
-    setIsDialogOpen(false);
+    setIsReturnDialogOpen(false);
     if(scanStep === 'success') {
       toast({
         title: 'Devolução Registrada!',
@@ -42,21 +50,39 @@ export default function EcoReturn() {
   };
 
   return (
-    <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
-      <h3 className="mb-2 font-headline text-2xl font-semibold">Pronto para devolver?</h3>
-      <p className="mb-6 text-muted-foreground">
-        Escaneie o QR code da sua embalagem para iniciar o processo.
-      </p>
-      <Button
-        size="lg"
-        onClick={() => setIsDialogOpen(true)}
-        className="wave-animate"
-      >
-        <QrCode className="mr-2 h-5 w-5" />
-        Escanear Embalagem
-      </Button>
+    <>
+      <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
+        <h3 className="mb-2 font-headline text-2xl font-semibold">Pronto para devolver?</h3>
+        <p className="mb-6 text-muted-foreground">
+          Escaneie o QR code da sua embalagem para iniciar o processo.
+        </p>
+        <Button
+          size="lg"
+          onClick={() => setIsReturnDialogOpen(true)}
+          className="wave-animate"
+        >
+          <QrCode className="mr-2 h-5 w-5" />
+          Escanear Embalagem
+        </Button>
+      </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <div className="mt-8 rounded-lg border bg-card p-8 text-center shadow-sm">
+        <h3 className="mb-2 font-headline text-2xl font-semibold">Ver no seu celular</h3>
+        <p className="mb-6 text-muted-foreground">
+          Escaneie o código abaixo para abrir este aplicativo no seu celular.
+        </p>
+        <Button
+          size="lg"
+          onClick={() => setIsAppQrDialogOpen(true)}
+          className="wave-animate"
+          variant="outline"
+        >
+          <Smartphone className="mr-2 h-5 w-5" />
+          Mostrar QR Code do App
+        </Button>
+      </div>
+
+      <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>
         <DialogContent
           onCloseAutoFocus={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
@@ -106,6 +132,22 @@ export default function EcoReturn() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      
+      <Dialog open={isAppQrDialogOpen} onOpenChange={setIsAppQrDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="font-headline text-center text-2xl">
+              Abra no seu celular
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Escaneie este código com a câmera do seu celular.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex h-64 items-center justify-center rounded-lg bg-white p-4">
+            {appUrl ? <QRCode value={appUrl} size={220} /> : <Loader2 className="h-24 w-24 animate-spin text-accent" />}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
