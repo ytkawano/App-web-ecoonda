@@ -44,9 +44,9 @@
     },
     {
       "id": "body-wash-1",
-      "description": "A body wash bottle with ocean waves in the background.",
-      "imageUrl": "https://picsum.photos/seed/107/600/800",
-      "imageHint": "body wash"
+      "description": "Saltwater body scrub in a jar on a beach setting.",
+      "imageUrl": "https://storage.googleapis.com/aifirebase/images/ECommerce/14-esfoliante.webp",
+      "imageHint": "body scrub"
     },
     {
       "id": "hair-mask-1",

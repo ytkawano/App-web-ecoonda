@@ -108,7 +108,7 @@ export const products: Product[] = [
     category: 'Corpo e Pele',
     price: 22.0,
     imageId: 'body-wash-1',
-    description: 'Esfolie e amacie sua pele com este esfoliante corporal revigorante feito com sal marinho natural e óleos nutritivos.',
+    description: 'Esfolia e suaviza com sal marinho e óleos nutritivos. Um esfoliante corporal revigorante que renova a pele, deixando-a macia e radiante.',
     ingredients: [
       { name: 'Sal Marinho', description: 'Esfoliante natural para remover as células mortas da pele.', environmentalImpact: 'Colhido de águas oceânicas limpas e evaporado naturalmente.' },
       { name: 'Óleo de Jojoba', description: 'Imita o sebo natural da pele para uma excelente hidratação.', environmentalImpact: 'Cultivado em regiões áridas, exigindo pouca água.' }

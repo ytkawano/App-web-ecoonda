@@ -28,11 +28,13 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
-  },
-  experimental: {
-    // This is required to fix a Next.js bug with Turbopack and cross-origin requests.
-    allowedDevOrigins: ['*'],
   },
 };
 
