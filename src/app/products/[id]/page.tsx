@@ -1,4 +1,5 @@
-import { products, placeholderImages } from '@/lib/data';
+import { products } from '@/lib/products';
+import { placeholderImages } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';

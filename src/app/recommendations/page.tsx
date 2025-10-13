@@ -1,5 +1,6 @@
 import RecommendationEngine from "@/components/recommendations/RecommendationEngine";
-import { products, userPreferences } from "@/lib/data";
+import { products } from "@/lib/products";
+import { userPreferences } from "@/lib/recommendations";
 
 export default function RecommendationsPage() {
   return (

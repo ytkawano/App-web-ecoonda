@@ -1,10 +1,14 @@
-import { products, productCategories } from '@/lib/data';
+import { productCategories } from '@/lib/data';
+import { products as allProducts } from '@/lib/products';
+import { getAIRecommendations } from '@/lib/recommendations';
 import ProductGrid from '@/components/products/ProductGrid';
 import Image from 'next/image';
 import { placeholderImages } from '@/lib/data';
 
 export default function Home() {
   const heroImage = placeholderImages.find((p) => p.id === 'hero-ocean');
+  const recommendedProducts = getAIRecommendations();
+
   return (
     <div>
       <section className="relative h-[60vh] w-full text-center text-white">
@@ -30,7 +34,22 @@ export default function Home() {
       </section>
 
       <div className="container mx-auto px-4 py-16">
-        <ProductGrid products={products} categories={productCategories} />
+        <section id="recommended-products" className="mb-16">
+          <h2 className="mb-8 text-center font-headline text-4xl font-bold">
+            Recomendado para Você
+          </h2>
+          <ProductGrid
+            products={recommendedProducts}
+            categories={productCategories}
+          />
+        </section>
+
+        <section id="all-products">
+          <h2 className="mb-8 text-center font-headline text-4xl font-bold">
+            Todos os Produtos
+          </h2>
+          <ProductGrid products={allProducts} categories={productCategories} />
+        </section>
       </div>
     </div>
   );

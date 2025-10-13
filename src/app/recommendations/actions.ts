@@ -1,7 +1,7 @@
 'use server';
 
 import { getProductRecommendations } from '@/ai/flows/ai-powered-product-recommendations';
-import { products as allProducts } from '@/lib/data';
+import { products as allProducts } from '@/lib/products';
 import type { Product } from '@/lib/types';
 import { z } from 'zod';
 
