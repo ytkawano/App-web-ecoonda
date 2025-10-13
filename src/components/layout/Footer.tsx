@@ -108,12 +108,12 @@ export function Footer() {
             <h4 className="font-headline font-semibold">Sobre</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent">
+                <Link href="/about" className="text-muted-foreground hover:text-accent">
                   Nossa História
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent">
+                <Link href="/about" className="text-muted-foreground hover:text-accent">
                   Sustentabilidade
                 </Link>
               </li>
