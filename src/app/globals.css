@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    --background: 40 39% 84%;
-    --foreground: 206 96% 8%;
-    --card: 40 39% 88%;
-    --card-foreground: 206 96% 8%;
-    --popover: 40 39% 84%;
-    --popover-foreground: 206 96% 8%;
-    --primary: 206 96% 8%;
-    --primary-foreground: 40 39% 95%;
-    --secondary: 40 20% 75%;
-    --secondary-foreground: 206 96% 8%;
-    --muted: 40 20% 80%;
+    --background: 40 13% 96%; /* pearl white */
+    --foreground: 206 96% 8%; /* navy */
+    --card: 40 13% 98%; /* lighter pearl */
+    --card-foreground: 206 96% 8%; /* navy */
+    --popover: 40 13% 96%; /* pearl white */
+    --popover-foreground: 206 96% 8%; /* navy */
+    --primary: 206 96% 8%; /* navy */
+    --primary-foreground: 40 13% 96%; /* pearl white */
+    --secondary: 40 39% 84%; /* sand beige */
+    --secondary-foreground: 206 96% 8%; /* navy */
+    --muted: 40 39% 90%; /* lighter sand beige */
     --muted-foreground: 206 96% 25%;
-    --accent: 169 57% 52%;
+    --accent: 169 57% 52%; /* turquoise */
     --accent-foreground: 206 96% 8%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 20% 70%;
-    --input: 40 20% 70%;
+    --border: 40 39% 88%;
+    --input: 40 39% 88%;
     --ring: 169 57% 52%;
     --chart-1: 169 57% 52%;
     --chart-2: 206 96% 40%;
@@ -40,19 +40,19 @@
   }
 
   .dark {
-    --background: 206 96% 8%;
-    --foreground: 40 39% 84%;
+    --background: 206 96% 8%; /* navy */
+    --foreground: 40 13% 96%; /* pearl white */
     --card: 206 96% 12%;
-    --card-foreground: 40 39% 84%;
+    --card-foreground: 40 13% 96%;
     --popover: 206 96% 8%;
-    --popover-foreground: 40 39% 84%;
-    --primary: 40 39% 84%;
-    --primary-foreground: 206 96% 8%;
-    --secondary: 206 96% 15%;
-    --secondary-foreground: 40 39% 84%;
+    --popover-foreground: 40 13% 96%;
+    --primary: 40 13% 96%; /* pearl white */
+    --primary-foreground: 206 96% 8%; /* navy */
+    --secondary: 206 96% 15%; /* dark navy */
+    --secondary-foreground: 40 13% 96%;
     --muted: 206 96% 15%;
     --muted-foreground: 40 39% 60%;
-    --accent: 169 57% 52%;
+    --accent: 169 57% 52%; /* turquoise */
     --accent-foreground: 206 96% 8%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
