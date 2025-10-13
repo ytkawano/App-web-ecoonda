@@ -6,9 +6,9 @@ import { Footer } from '@/components/layout/Footer';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'ECOONDA: Marine Beauty',
+  title: 'ECOONDA: Beleza Marinha',
   description:
-    'Discover sustainable, vegan cosmetics inspired by the ocean. Join our mission for a cleaner planet.',
+    'Descubra cosméticos sustentáveis e veganos inspirados no oceano. Junte-se à nossa missão por um planeta mais limpo.',
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link

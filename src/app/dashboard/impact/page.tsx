@@ -5,10 +5,10 @@ export default function ImpactPage() {
   return (
     <div>
       <h1 className="mb-6 font-headline text-4xl font-bold text-primary">
-        Your Eco Impact
+        Seu Impacto Ecológico
       </h1>
       <p className="mb-8 text-lg text-muted-foreground">
-        See the difference you're making. Every sustainable choice contributes to a healthier planet.
+        Veja a diferença que você está fazendo. Cada escolha sustentável contribui para um planeta mais saudável.
       </p>
       <ImpactTracker userImpact={userImpact} badges={impactBadges} />
     </div>

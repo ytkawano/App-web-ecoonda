@@ -10,9 +10,9 @@ import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { useState } from 'react';
 
 const mainNavLinks = [
-  { href: '/', label: 'Shop' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/recommendations', label: 'For You' },
+  { href: '/', label: 'Loja' },
+  { href: '/dashboard', label: 'Painel' },
+  { href: '/recommendations', label: 'Para Você' },
 ];
 
 export function Header() {
@@ -56,7 +56,7 @@ export function Header() {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle Menu</span>
+                <span className="sr-only">Alternar Menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] pt-10">
@@ -78,11 +78,11 @@ export function Header() {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="wave-hover">
               <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
+              <span className="sr-only">Conta</span>
             </Button>
             <Button variant="ghost" size="icon" className="wave-hover">
               <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Cart</span>
+              <span className="sr-only">Carrinho</span>
             </Button>
           </div>
         </div>

@@ -35,15 +35,23 @@ interface RecommendationEngineProps {
   };
 }
 
-const skinTypes = ['oily', 'dry', 'combination', 'normal', 'sensitive', 'acne-prone'];
+const skinTypes = [
+  { value: 'oily', label: 'Oleosa' },
+  { value: 'dry', label: 'Seca' },
+  { value: 'combination', label: 'Mista' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'sensitive', label: 'Sensível' },
+  { value: 'acne-prone', label: 'Com acne' }
+];
+
 const sustainabilityOptions = [
-  'vegan',
-  'cruelty-free',
-  'plastic-free-packaging',
-  'recycled-materials',
-  'fair-trade',
-  'water-conscious',
-  'reef-safe'
+  { value: 'vegan', label: 'Vegano' },
+  { value: 'cruelty-free', label: 'Livre de crueldade' },
+  { value: 'plastic-free-packaging', label: 'Embalagem sem plástico' },
+  { value: 'recycled-materials', label: 'Materiais reciclados' },
+  { value: 'fair-trade', label: 'Comércio justo' },
+  { value: 'water-conscious', label: 'Consciente com a água' },
+  { value: 'reef-safe', label: 'Seguro para corais' }
 ];
 
 function SubmitButton() {
@@ -53,12 +61,12 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Finding Your Products...
+          Encontrando Seus Produtos...
         </>
       ) : (
         <>
           <Wand2 className="mr-2 h-4 w-4" />
-          Get Recommendations
+          Obter Recomendações
         </>
       )}
     </Button>
@@ -80,7 +88,7 @@ export default function RecommendationEngine({
     if (state.error) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Erro',
         description: state.error,
       });
     }
@@ -108,44 +116,44 @@ export default function RecommendationEngine({
       <Card>
         <form action={formAction}>
           <CardHeader>
-            <CardTitle className="font-headline">Your Profile</CardTitle>
+            <CardTitle className="font-headline">Seu Perfil</CardTitle>
             <CardDescription>
-              Adjust your preferences to get the most accurate recommendations.
+              Ajuste suas preferências para obter as recomendações mais precisas.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div className="space-y-4">
-              <Label htmlFor="skinType">Your Skin Type</Label>
+              <Label htmlFor="skinType">Seu Tipo de Pele</Label>
               <Select name="skinType" value={skinType} onValueChange={setSkinType}>
                 <SelectTrigger id="skinType">
-                  <SelectValue placeholder="Select your skin type" />
+                  <SelectValue placeholder="Selecione seu tipo de pele" />
                 </SelectTrigger>
                 <SelectContent>
                   {skinTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="capitalize">
-                      {type}
+                    <SelectItem key={type.value} value={type.value} className="capitalize">
+                      {type.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-4">
-              <Label>Sustainability Values</Label>
+              <Label>Valores de Sustentabilidade</Label>
               <div className="grid grid-cols-2 gap-4">
                 {sustainabilityOptions.map((pref) => (
-                  <div key={pref} className="flex items-center space-x-2">
+                  <div key={pref.value} className="flex items-center space-x-2">
                     <Checkbox
-                      id={pref}
+                      id={pref.value}
                       name="sustainabilityPreferences"
-                      value={pref}
-                      checked={sustainabilityPrefs.has(pref)}
-                      onCheckedChange={(checked) => handleCheckboxChange(pref, !!checked)}
+                      value={pref.value}
+                      checked={sustainabilityPrefs.has(pref.value)}
+                      onCheckedChange={(checked) => handleCheckboxChange(pref.value, !!checked)}
                     />
                     <Label
-                      htmlFor={pref}
+                      htmlFor={pref.value}
                       className="text-sm font-medium capitalize leading-none"
                     >
-                      {pref.replace(/-/g, ' ')}
+                      {pref.label}
                     </Label>
                   </div>
                 ))}
@@ -165,9 +173,9 @@ export default function RecommendationEngine({
         <div className="mt-12">
             <div className="text-center mb-8">
                 <h2 className="font-headline text-3xl font-bold text-primary">
-                    Your Personalized Results
+                    Seus Resultados Personalizados
                 </h2>
-                <p className="text-muted-foreground">Based on your profile, we think you'll love these.</p>
+                <p className="text-muted-foreground">Com base no seu perfil, achamos que você vai adorar estes.</p>
             </div>
             {recommendedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,7 +184,7 @@ export default function RecommendationEngine({
                     ))}
                 </div>
             ) : (
-                <p className='text-center text-muted-foreground'>No recommendations found for your specific preferences. Try adjusting your profile!</p>
+                <p className='text-center text-muted-foreground'>Nenhuma recomendação encontrada para suas preferências específicas. Tente ajustar seu perfil!</p>
             )}
         </div>
       )}

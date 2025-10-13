@@ -34,16 +34,16 @@ interface ImpactTrackerProps {
 
 const monthlyData = [
   { month: 'Jan', plastic: 150, co2: 0.5 },
-  { month: 'Feb', plastic: 200, co2: 0.7 },
+  { month: 'Fev', plastic: 200, co2: 0.7 },
   { month: 'Mar', plastic: 180, co2: 0.6 },
-  { month: 'Apr', plastic: 250, co2: 0.8 },
-  { month: 'May', plastic: 300, co2: 1.1 },
+  { month: 'Abr', plastic: 250, co2: 0.8 },
+  { month: 'Mai', plastic: 300, co2: 1.1 },
   { month: 'Jun', plastic: 280, co2: 1.0 },
 ];
 
 const pieData = [
-    { name: 'Plastic Saved (g)', value: 1250 },
-    { name: 'Returns Made', value: 12 },
+    { name: 'Plástico Economizado (g)', value: 1250 },
+    { name: 'Devoluções Feitas', value: 12 },
   ];
   
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
@@ -55,7 +55,7 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Plastic Saved
+              Plástico Economizado
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -67,7 +67,7 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              CO₂ Avoided
+              CO₂ Evitado
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -77,7 +77,7 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Eco Points
+              Eco Pontos
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -89,7 +89,7 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Returns Made
+              Devoluções Feitas
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -100,8 +100,8 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Progress</CardTitle>
-          <CardDescription>Your plastic and CO₂ savings over the last 6 months.</CardDescription>
+          <CardTitle>Progresso Mensal</CardTitle>
+          <CardDescription>Sua economia de plástico e CO₂ nos últimos 6 meses.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] w-full">
@@ -118,7 +118,7 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
                     borderColor: 'hsl(var(--border))',
                   }}
                 />
-                <Bar yAxisId="left" dataKey="plastic" name="Plastic (g)" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="left" dataKey="plastic" name="Plástico (g)" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="right" dataKey="co2" name="CO₂ (kg)" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -128,8 +128,8 @@ export default function ImpactTracker({ userImpact, badges }: ImpactTrackerProps
       
       <Card>
         <CardHeader>
-          <CardTitle>Your Badges</CardTitle>
-          <CardDescription>Celebrate your sustainability milestones.</CardDescription>
+          <CardTitle>Seus Emblemas</CardTitle>
+          <CardDescription>Comemore seus marcos de sustentabilidade.</CardDescription>
         </CardHeader>
         <CardContent>
           <TooltipProvider>

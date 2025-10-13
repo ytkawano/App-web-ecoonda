@@ -4,10 +4,10 @@ export default function ReturnsPage() {
     return (
         <div>
             <h1 className="mb-6 font-headline text-4xl font-bold text-primary">
-                EcoReturn System
+                Sistema EcoReturn
             </h1>
             <p className="mb-8 text-lg text-muted-foreground">
-                Join our circular economy. Return your empty ECOONDA packaging to earn points and help us reduce waste.
+                Participe da nossa economia circular. Devolva suas embalagens vazias da ECOONDA para ganhar pontos e nos ajudar a reduzir o desperdício.
             </p>
             <EcoReturn />
         </div>

@@ -7,7 +7,7 @@ export type Ingredient = {
 export type Product = {
   id: string;
   name: string;
-  category: 'Hair Care' | 'Body & Skin' | 'Facial Care';
+  category: 'Cuidado Capilar' | 'Corpo e Pele' | 'Cuidado Facial';
   price: number;
   description: string;
   imageId: string;

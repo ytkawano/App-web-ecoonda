@@ -35,17 +35,17 @@ export default function EcoReturn() {
     setIsDialogOpen(false);
     if(scanStep === 'success') {
       toast({
-        title: 'Return Registered!',
-        description: 'You\'ve earned 50 Eco Points. Thank you for helping the planet!',
+        title: 'Devolução Registrada!',
+        description: 'Você ganhou 50 Eco Pontos. Obrigado por ajudar o planeta!',
       });
     }
   };
 
   return (
     <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
-      <h3 className="mb-2 font-headline text-2xl font-semibold">Ready to Return?</h3>
+      <h3 className="mb-2 font-headline text-2xl font-semibold">Pronto para devolver?</h3>
       <p className="mb-6 text-muted-foreground">
-        Scan the QR code on your packaging to start the process.
+        Escaneie o QR code da sua embalagem para iniciar o processo.
       </p>
       <Button
         size="lg"
@@ -53,7 +53,7 @@ export default function EcoReturn() {
         className="wave-animate"
       >
         <QrCode className="mr-2 h-5 w-5" />
-        Scan Packaging
+        Escanear Embalagem
       </Button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -67,16 +67,16 @@ export default function EcoReturn() {
                 className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
             >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">Fechar</span>
             </button>
           <DialogHeader>
             <DialogTitle className="font-headline text-center text-2xl">
-              Register Your Return
+              Registre Sua Devolução
             </DialogTitle>
             <DialogDescription className="text-center">
-              {scanStep === 'initial' && 'Position the QR code within the frame.'}
-              {scanStep === 'scanning' && 'Scanning... hold steady.'}
-              {scanStep === 'success' && 'Scan successful! Your return is logged.'}
+              {scanStep === 'initial' && 'Posicione o QR code dentro do quadro.'}
+              {scanStep === 'scanning' && 'Escaneando... mantenha firme.'}
+              {scanStep === 'success' && 'Escaneamento com sucesso! Sua devolução foi registrada.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -89,18 +89,18 @@ export default function EcoReturn() {
           <DialogFooter>
             {scanStep === 'initial' && (
               <Button onClick={handleScan} className="w-full">
-                Simulate Scan
+                Simular Escaneamento
               </Button>
             )}
             {scanStep === 'success' && (
               <Button onClick={handleClose} className="w-full">
-                Done
+                Pronto
               </Button>
             )}
              {scanStep === 'scanning' && (
               <Button disabled className="w-full">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Scanning...
+                Escaneando...
               </Button>
             )}
           </DialogFooter>

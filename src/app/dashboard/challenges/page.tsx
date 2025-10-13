@@ -5,10 +5,10 @@ export default function ChallengesPage() {
     return (
         <div>
             <h1 className="mb-6 font-headline text-4xl font-bold text-primary">
-                Eco Challenges
+                Desafios Ecológicos
             </h1>
             <p className="mb-8 text-lg text-muted-foreground">
-                Join our community in making a bigger impact. Complete challenges to earn points and exclusive badges.
+                Junte-se à nossa comunidade para causar um impacto maior. Complete desafios para ganhar pontos e emblemas exclusivos.
             </p>
             <EcoChallenges challenges={challenges} />
         </div>

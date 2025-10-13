@@ -3,154 +3,154 @@ import { Leaf, Recycle, Sprout, Droplets, Award, Star, Shield } from 'lucide-rea
 import placeholderData from './placeholder-images.json';
 
 export const productCategories: Product['category'][] = [
-  'Facial Care',
-  'Body & Skin',
-  'Hair Care',
+  'Cuidado Facial',
+  'Corpo e Pele',
+  'Cuidado Capilar',
 ];
 
 export const products: Product[] = [
   {
     id: 'prod_001',
-    name: 'Ocean Dew Serum',
-    category: 'Facial Care',
+    name: 'Sérum Orvalho do Oceano',
+    category: 'Cuidado Facial',
     price: 48.0,
     imageId: 'serum-1',
     description:
-      'A hydrating facial serum packed with marine extracts to rejuvenate and plump your skin, leaving a dewy, fresh finish.',
+      'Um sérum facial hidratante repleto de extratos marinhos para rejuvenescer e preencher sua pele, deixando um acabamento fresco e radiante.',
     ingredients: [
       {
-        name: 'Kelp Extract',
+        name: 'Extrato de Algas',
         description:
-          'Rich in antioxidants, kelp helps to protect your skin from external aggressors and soothe inflammation.',
+          'Rico em antioxidantes, o extrato de algas ajuda a proteger sua pele de agressores externos e a acalmar a inflamação.',
         environmentalImpact:
-          'Sustainably harvested from protected ocean farms, promoting marine biodiversity and ensuring minimal disruption to ecosystems.',
+          'Colhido de forma sustentável em fazendas oceânicas protegidas, promovendo a biodiversidade marinha e garantindo o mínimo de perturbação nos ecossistemas.',
       },
       {
-        name: 'Hyaluronic Acid',
-        description: 'A powerful humectant that draws moisture into the skin, providing long-lasting hydration.',
-        environmentalImpact: 'Our hyaluronic acid is derived from vegan, bio-fermentation processes, avoiding animal-derived sources and reducing water usage.',
+        name: 'Ácido Hialurônico',
+        description: 'Um poderoso umectante que atrai umidade para a pele, proporcionando hidratação de longa duração.',
+        environmentalImpact: 'Nosso ácido hialurônico é derivado de processos de biofermentação veganos, evitando fontes de origem animal e reduzindo o uso de água.',
       },
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'plastic-free-packaging'],
-    suitableSkinTypes: ['dry', 'normal', 'combination'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'embalagem-sem-plástico'],
+    suitableSkinTypes: ['seca', 'normal', 'mista'],
   },
   {
     id: 'prod_002',
-    name: 'Seaweed Strength Shampoo',
-    category: 'Hair Care',
+    name: 'Shampoo Força das Algas',
+    category: 'Cuidado Capilar',
     price: 28.0,
     imageId: 'shampoo-1',
     description:
-      'Fortify your hair from root to tip with this nutrient-rich shampoo. Seaweed and marine minerals cleanse gently while boosting volume and shine.',
+      'Fortaleça seu cabelo da raiz às pontas com este shampoo rico em nutrientes. Algas e minerais marinhos limpam suavemente enquanto aumentam o volume e o brilho.',
     ingredients: [
        {
-        name: 'Spirulina',
+        name: 'Espirulina',
         description:
-          'A blue-green algae packed with protein and iron, which helps to strengthen hair and promote growth.',
+          'Uma alga azul-esverdeada rica em proteínas e ferro, que ajuda a fortalecer o cabelo e a promover o crescimento.',
         environmentalImpact:
-          'Cultivated in controlled, freshwater pools that recycle water, our spirulina has a low carbon footprint.',
+          'Cultivada em piscinas de água doce controladas que reciclam a água, nossa espirulina tem uma baixa pegada de carbono.',
       },
        {
-        name: 'Sea Salt',
-        description: 'Adds texture and volume to hair while gently exfoliating the scalp.',
-        environmentalImpact: 'Harvested from natural salt pans using traditional, energy-efficient methods that preserve the surrounding environment.',
+        name: 'Sal Marinho',
+        description: 'Adiciona textura e volume ao cabelo enquanto esfolia suavemente o couro cabeludo.',
+        environmentalImpact: 'Colhido de salinas naturais usando métodos tradicionais e eficientes em termos de energia que preservam o ambiente circundante.',
       },
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'recycled-materials'],
-    suitableSkinTypes: ['oily', 'normal'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'materiais-reciclados'],
+    suitableSkinTypes: ['oleosa', 'normal'],
   },
   {
     id: 'prod_003',
-    name: 'Marine Mud-Mask',
-    category: 'Facial Care',
+    name: 'Máscara de Lama Marinha',
+    category: 'Cuidado Facial',
     price: 35.0,
     imageId: 'face-mask-1',
     description:
-      'A detoxifying mud mask infused with mineral-rich marine clay to draw out impurities and refine pores.',
+      'Uma máscara de lama desintoxicante infundida com argila marinha rica em minerais para extrair impurezas e refinar os poros.',
     ingredients: [
       {
-        name: 'Marine Clay',
-        description: 'A mineral-rich clay that detoxifies the skin by absorbing excess oil and impurities.',
-        environmentalImpact: 'Sourced from naturally occurring coastal deposits with responsible extraction methods to ensure the stability of the shoreline.',
+        name: 'Argila Marinha',
+        description: 'Uma argila rica em minerais que desintoxica a pele, absorvendo o excesso de óleo e impurezas.',
+        environmentalImpact: 'Proveniente de depósitos costeiros naturais com métodos de extração responsáveis para garantir a estabilidade da linha costeira.',
       },
       {
-        name: 'Bladderwrack Extract',
-        description: 'A type of seaweed that helps to improve skin elasticity and reduce inflammation.',
-        environmentalImpact: 'Harvested by hand during low tide to avoid damaging the seabed and allow for natural regeneration.',
+        name: 'Extrato de Fucus',
+        description: 'Um tipo de alga que ajuda a melhorar a elasticidade da pele e a reduzir a inflamação.',
+        environmentalImpact: 'Colhido à mão durante a maré baixa para evitar danos ao fundo do mar e permitir a regeneração natural.',
       },
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'compostable'],
-    suitableSkinTypes: ['oily', 'combination', 'acne-prone'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'compostável'],
+    suitableSkinTypes: ['oleosa', 'mista', 'com-acne'],
   },
    {
     id: 'prod_004',
-    name: 'Coral Reef Cleanser',
-    category: 'Facial Care',
+    name: 'Limpador Coral Reef',
+    category: 'Cuidado Facial',
     price: 25.0,
     imageId: 'cleanser-1',
-    description: 'A gentle foaming cleanser that removes makeup and impurities without stripping the skin\'s natural moisture barrier.',
+    description: 'Um limpador de espuma suave que remove maquiagem e impurezas sem agredir a barreira de hidratação natural da pele.',
     ingredients: [
-      { name: 'Red Algae', description: 'Known for its brightening and moisturizing properties.', environmentalImpact: 'Farmed on land to protect fragile marine ecosystems.' },
-      { name: 'Cocamidopropyl Betaine', description: 'A mild surfactant derived from coconuts.', environmentalImpact: 'Sourced from certified sustainable coconut plantations.' }
+      { name: 'Algas Vermelhas', description: 'Conhecida por suas propriedades clareadoras e hidratantes.', environmentalImpact: 'Cultivada em terra para proteger os frágeis ecossistemas marinhos.' },
+      { name: 'Cocamidopropil Betaína', description: 'Um surfactante suave derivado de cocos.', environmentalImpact: 'Proveniente de plantações de coco sustentáveis certificadas.' }
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'reef-safe'],
-    suitableSkinTypes: ['all', 'sensitive'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'seguro-para-corais'],
+    suitableSkinTypes: ['todos', 'sensível'],
   },
   {
     id: 'prod_005',
-    name: 'Deep Sea Conditioner',
-    category: 'Hair Care',
+    name: 'Condicionador Mar Profundo',
+    category: 'Cuidado Capilar',
     price: 30.0,
     imageId: 'conditioner-1',
-    description: 'Intensely hydrate and detangle your hair with this creamy conditioner, leaving it soft and manageable.',
+    description: 'Hidrate e desembarace intensamente seus cabelos com este condicionador cremoso, deixando-os macios и fáceis de pentear.',
     ingredients: [
-      { name: 'Irish Moss', description: 'A seaweed that provides slip and moisture to hair.', environmentalImpact: 'Wild-harvested with techniques that ensure regrowth.' },
-      { name: 'Shea Butter', description: 'Provides deep moisturization for hair strands.', environmentalImpact: 'Sourced from a women\'s cooperative in Ghana that practices fair trade.' }
+      { name: 'Musgo Irlandês', description: 'Uma alga que proporciona deslizamento e umidade aos cabelos.', environmentalImpact: 'Colhido na natureza com técnicas que garantem o recrescimento.' },
+      { name: 'Manteiga de Karité', description: 'Fornece hidratação profunda para os fios de cabelo.', environmentalImpact: 'Proveniente de uma cooperativa de mulheres em Gana que pratica o comércio justo.' }
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'fair-trade'],
-    suitableSkinTypes: ['dry', 'damaged'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'comércio-justo'],
+    suitableSkinTypes: ['seco', 'danificado'],
   },
   {
     id: 'prod_006',
-    name: 'Saltwater Body Scrub',
-    category: 'Body & Skin',
+    name: 'Esfoliante Corporal de Água Salgada',
+    category: 'Corpo e Pele',
     price: 22.0,
     imageId: 'body-wash-1',
-    description: 'Exfoliate and soften your skin with this invigorating body scrub made with natural sea salt and nourishing oils.',
+    description: 'Esfolie e amacie sua pele com este esfoliante corporal revigorante feito com sal marinho natural e óleos nutritivos.',
     ingredients: [
-      { name: 'Sea Salt', description: 'Natural exfoliant to slough away dead skin cells.', environmentalImpact: 'Harvested from clean ocean waters and naturally evaporated.' },
-      { name: 'Jojoba Oil', description: 'Mimics the skin\'s natural sebum for excellent moisturization.', environmentalImpact: 'Grown in arid regions, requiring minimal water.' }
+      { name: 'Sal Marinho', description: 'Esfoliante natural para remover as células mortas da pele.', environmentalImpact: 'Colhido de águas oceânicas limpas e evaporado naturalmente.' },
+      { name: 'Óleo de Jojoba', description: 'Imita o sebo natural da pele para uma excelente hidratação.', environmentalImpact: 'Cultivado em regiões áridas, exigindo pouca água.' }
     ],
-    sustainabilityAttributes: ['vegan', 'cruelty-free', 'water-conscious'],
-    suitableSkinTypes: ['all'],
+    sustainabilityAttributes: ['vegano', 'livre-de-crueldade', 'consciente-com-a-água'],
+    suitableSkinTypes: ['todos'],
   },
 ];
 
 export const challenges: Challenge[] = [
   {
     id: 'chal_001',
-    title: 'Plastic-Free Week',
+    title: 'Semana Sem Plástico',
     description:
-      'Complete a week of purchases using only products with plastic-free packaging.',
+      'Complete uma semana de compras usando apenas produtos com embalagens sem plástico.',
     points: 100,
-    badge: 'Plastic Warrior',
+    badge: 'Guerreiro do Plástico',
     progress: 60,
   },
   {
     id: 'chal_002',
-    title: 'Return Champion',
-    description: 'Return 5 empty containers using our EcoReturn system this month.',
+    title: 'Campeão da Devolução',
+    description: 'Devolva 5 embalagens vazias usando nosso sistema EcoReturn este mês.',
     points: 150,
-    badge: 'Recycle Hero',
+    badge: 'Herói da Reciclagem',
     progress: 20,
   },
   {
     id: 'chal_003',
-    title: 'Vegan Virtuoso',
+    title: 'Virtuoso Vegano',
     description:
-      'Try three different products from our vegan-certified facial care line.',
+      'Experimente três produtos diferentes da nossa linha de cuidados faciais com certificação vegana.',
     points: 75,
-    badge: 'Plant-Powered',
+    badge: 'Poder Vegetal',
     progress: 100,
   },
 ];
@@ -163,18 +163,18 @@ export const userImpact: UserImpact = {
 };
 
 export const impactBadges: ImpactBadge[] = [
-    { name: 'Eco Starter', description: 'Made your first sustainable purchase.', icon: Sprout },
-    { name: 'Plastic Warrior', description: 'Saved 1kg of plastic.', icon: Shield },
-    { name: 'Recycle Hero', description: 'Returned 10 containers.', icon: Recycle },
-    { name: 'Water Guardian', description: 'Chose 5 water-conscious products.', icon: Droplets },
-    { name: 'Green Leaf', description: 'Reached 1000 eco points.', icon: Leaf },
-    { name: 'Eco Champion', description: 'Completed 5 challenges.', icon: Award },
-    { name: 'Planet Protector', description: 'Top 1% of eco-conscious users.', icon: Star },
+    { name: 'Iniciante Eco', description: 'Fez sua primeira compra sustentável.', icon: Sprout },
+    { name: 'Guerreiro do Plástico', description: 'Economizou 1kg de plástico.', icon: Shield },
+    { name: 'Herói da Reciclagem', description: 'Devolveu 10 embalagens.', icon: Recycle },
+    { name: 'Guardião da Água', description: 'Escolheu 5 produtos conscientes sobre o uso da água.', icon: Droplets },
+    { name: 'Folha Verde', description: 'Alcançou 1000 eco pontos.', icon: Leaf },
+    { name: 'Campeão Ecológico', description: 'Completou 5 desafios.', icon: Award },
+    { name: 'Protetor do Planeta', description: 'Top 1% de usuários eco-conscientes.', icon: Star },
 ];
 
 export const userPreferences = {
-    skinType: 'combination',
-    sustainabilityPreferences: ['plastic-free-packaging', 'vegan'],
+    skinType: 'mista',
+    sustainabilityPreferences: ['embalagem-sem-plástico', 'vegano'],
     purchaseHistory: ['prod_001', 'prod_002'],
 };
 

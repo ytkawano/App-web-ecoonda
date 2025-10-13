@@ -21,7 +21,7 @@ export default function ProductFilters({
           onClick={() => setActiveCategory(category)}
           className={cn('wave-hover rounded-full px-6 capitalize')}
         >
-          {category}
+          {category === 'All' ? 'Todos' : category}
         </Button>
       ))}
     </div>

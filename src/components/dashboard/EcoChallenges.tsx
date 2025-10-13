@@ -38,7 +38,7 @@ export default function EcoChallenges({ challenges }: EcoChallengesProps) {
               </CardHeader>
               <CardContent className="flex-1 p-0 pt-4">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Progress</span>
+                  <span>Progresso</span>
                   <span>{challenge.progress}%</span>
                 </div>
                 <Progress value={challenge.progress} className="mt-1" />
@@ -47,12 +47,12 @@ export default function EcoChallenges({ challenges }: EcoChallengesProps) {
                 <div className="flex items-center font-semibold text-accent">
                   <Award className="mr-2 h-5 w-5" />
                   <span>
-                    {challenge.points} Points + {challenge.badge} Badge
+                    {challenge.points} Pontos + Emblema {challenge.badge}
                   </span>
                 </div>
                 {isCompleted && (
                   <Button variant="outline" disabled>
-                    Completed
+                    Concluído
                   </Button>
                 )}
               </CardFooter>

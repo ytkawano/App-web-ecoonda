@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const dashboardNavLinks = [
-  { href: '/dashboard/impact', label: 'My Impact', icon: BarChart2 },
-  { href: '/dashboard/challenges', label: 'Eco Challenges', icon: Award },
+  { href: '/dashboard/impact', label: 'Meu Impacto', icon: BarChart2 },
+  { href: '/dashboard/challenges', label: 'Desafios Ecológicos', icon: Award },
   { href: '/dashboard/returns', label: 'EcoReturn', icon: QrCode },
 ];
 
@@ -22,7 +22,7 @@ export default function DashboardLayout({
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
         <aside className="md:col-span-1">
-          <h2 className="mb-4 font-headline text-2xl font-bold">Dashboard</h2>
+          <h2 className="mb-4 font-headline text-2xl font-bold">Painel</h2>
           <nav className="flex flex-col space-y-2">
             {dashboardNavLinks.map((link) => {
               const isActive = pathname === link.href;

@@ -29,7 +29,7 @@ export function Footer() {
           <div className="space-y-4">
             <Logo />
             <p className="text-sm text-muted-foreground">
-              Sustainable, vegan cosmetics inspired by the ocean.
+              Cosméticos sustentáveis e veganos inspirados no oceano.
             </p>
             <div className="flex space-x-4">
               <SocialIcon href="#">
@@ -85,49 +85,49 @@ export function Footer() {
             </div>
           </div>
           <div className="space-y-4">
-            <h4 className="font-headline font-semibold">Shop</h4>
+            <h4 className="font-headline font-semibold">Compre</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Facial Care
+                  Cuidado Facial
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Body & Skin
+                  Corpo e Pele
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Hair Care
+                  Cuidado Capilar
                 </Link>
               </li>
             </ul>
           </div>
           <div className="space-y-4">
-            <h4 className="font-headline font-semibold">About</h4>
+            <h4 className="font-headline font-semibold">Sobre</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Our Story
+                  Nossa História
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Sustainability
+                  Sustentabilidade
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Contact
+                  Contato
                 </Link>
               </li>
             </ul>
           </div>
           <div className="space-y-4">
-            <h4 className="font-headline font-semibold">Join Our Community</h4>
+            <h4 className="font-headline font-semibold">Junte-se à Nossa Comunidade</h4>
             <p className="text-sm text-muted-foreground">
-              Get eco-tips, new product alerts, and special offers.
+              Receba dicas ecológicas, alertas de novos produtos e ofertas especiais.
             </p>
             <div className="flex w-full max-w-sm items-center space-x-2">
               <Input type="email" placeholder="Email" className="bg-background" />
@@ -138,7 +138,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} ECOONDA. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ECOONDA. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

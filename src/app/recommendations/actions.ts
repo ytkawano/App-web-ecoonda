@@ -27,7 +27,7 @@ export async function fetchRecommendations(
   });
 
   if (!validatedFields.success) {
-    return { error: 'Invalid input data.' };
+    return { error: 'Dados de entrada inválidos.' };
   }
 
   try {
@@ -48,10 +48,10 @@ export async function fetchRecommendations(
     if (result && result.recommendedProducts) {
       return { recommendedProductIds: result.recommendedProducts };
     } else {
-      return { error: 'Could not generate recommendations at this time.' };
+      return { error: 'Não foi possível gerar recomendações no momento.' };
     }
   } catch (e) {
     console.error(e);
-    return { error: 'An unexpected error occurred.' };
+    return { error: 'Ocorreu um erro inesperado.' };
   }
 }

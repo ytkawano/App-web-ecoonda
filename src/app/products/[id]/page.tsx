@@ -43,7 +43,7 @@ export default function ProductDetailPage({
             {product.name}
           </h1>
           <p className="mt-2 text-2xl font-semibold text-muted-foreground">
-            ${product.price.toFixed(2)}
+            R${product.price.toFixed(2).replace('.', ',')}
           </p>
           <p className="mt-4 text-base leading-relaxed text-foreground/80">
             {product.description}
@@ -51,14 +51,14 @@ export default function ProductDetailPage({
 
           <div className="mt-8">
             <Button size="lg" className="w-full wave-animate">
-              Add to Cart
+              Adicionar ao Carrinho
             </Button>
           </div>
 
           <Accordion type="single" collapsible className="mt-8 w-full">
             <AccordionItem value="ingredients">
               <AccordionTrigger className="font-headline text-lg">
-                Sustainable Ingredients
+                Ingredientes Sustentáveis
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="space-y-4 text-sm">
@@ -68,7 +68,7 @@ export default function ProductDetailPage({
                       {ing.description}
                       <p className="mt-1 text-xs text-muted-foreground">
                         <Leaf className="mr-1 inline h-3 w-3" />
-                        <strong>Environmental Impact:</strong>{' '}
+                        <strong>Impacto Ambiental:</strong>{' '}
                         {ing.environmentalImpact}
                       </p>
                     </li>
@@ -78,7 +78,7 @@ export default function ProductDetailPage({
             </AccordionItem>
             <AccordionItem value="sustainability">
               <AccordionTrigger className="font-headline text-lg">
-                Eco-Attributes
+                Atributos Ecológicos
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="space-y-2 text-sm">

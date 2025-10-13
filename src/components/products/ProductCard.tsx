@@ -32,7 +32,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                <div className="translate-y-4 opacity-0 transition-all duration-300 ease-in-out group-hover:translate-y-0 group-hover:opacity-100">
                 <Button variant="secondary" size="sm" className="w-full">
                     <ShoppingBag className="mr-2 h-4 w-4" />
-                    Quick Add
+                    Adicionar
                 </Button>
               </div>
             </div>
@@ -41,7 +41,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-headline text-lg font-semibold text-primary truncate">
               {product.name}
             </h3>
-            <p className="text-md font-medium text-muted-foreground">${product.price.toFixed(2)}</p>
+            <p className="text-md font-medium text-muted-foreground">R${product.price.toFixed(2).replace('.', ',')}</p>
           </div>
         </CardContent>
       </Card>

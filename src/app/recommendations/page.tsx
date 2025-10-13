@@ -6,10 +6,10 @@ export default function RecommendationsPage() {
     <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="text-center">
         <h1 className="mb-4 font-headline text-5xl font-bold tracking-tight text-primary md:text-6xl">
-          Curated For You
+          Selecionado para Você
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Let our AI guide you to the perfect ECOONDA products based on your unique profile and preferences.
+          Deixe nossa IA guiá-lo para os produtos ECOONDA perfeitos com base em seu perfil e preferências únicos.
         </p>
       </div>
 
