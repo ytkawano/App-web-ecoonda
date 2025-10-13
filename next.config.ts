@@ -30,9 +30,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  devIndicators: {
-    buildActivity: false,
-  },
   experimental: {
     // This is required to fix a Next.js bug with Turbopack and cross-origin requests.
     allowedDevOrigins: ['*'],
