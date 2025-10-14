@@ -21,11 +21,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
 import { Menu, ShoppingCart, User, Heart, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 
 const mainNavLinks = [
   { href: '/', label: 'Loja' },
-  { href: '/dashboard', label: 'Painel' },
   { href: '/recommendations', label: 'Para Você' },
+  { href: '/about', label: 'Sobre' },
 ];
 
 export function Header() {
@@ -38,6 +39,15 @@ export function Header() {
   const handleLogout = async () => {
     await signOut(auth);
     toast({ title: "Você saiu da sua conta." });
+  };
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return names[0][0];
   };
 
   const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
@@ -62,6 +72,20 @@ export function Header() {
           </Link>
         );
       })}
+        {user && (
+          <Link
+            key="/account"
+            href="/account"
+            onClick={() => isMobile && setIsMobileMenuOpen(false)}
+            className={cn(
+              'text-sm font-medium transition-colors hover:text-accent',
+              pathname.startsWith('/account') || pathname.startsWith('/dashboard') ? 'text-accent' : 'text-foreground/80',
+              isMobile && 'block px-4 py-2 text-base'
+            )}
+          >
+            Minha Conta
+          </Link>
+        )}
     </>
   );
 
@@ -72,17 +96,25 @@ export function Header() {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="wave-hover">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Minha Conta</span>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+              </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <p>Minha Conta</p>
+              <p className="text-xs text-muted-foreground font-normal">{user.email}</p>
+              </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/account">Minha Conta</Link>
+              <Link href="/account">Perfil</Link>
             </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href="/dashboard/impact">Meu Impacto</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Sair</span>

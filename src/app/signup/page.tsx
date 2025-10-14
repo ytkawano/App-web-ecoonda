@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function SignupPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,12 +36,15 @@ export default function SignupPage() {
 
     if (password !== confirmPassword) {
       setError('As senhas não coincidem.');
+      toast({ title: 'Erro de Cadastro', description: 'As senhas não coincidem.', variant: 'destructive' });
       setLoading(false);
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
+      
       toast({ title: 'Cadastro bem-sucedido!', description: 'Você será redirecionado para a página inicial.' });
       router.push('/');
     } catch (error: any) {
@@ -72,7 +76,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
+    <div className="flex justify-center items-center h-[calc(100vh-8rem)] py-8">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Cadastro</CardTitle>
@@ -82,6 +86,17 @@ export default function SignupPage() {
         </CardHeader>
         <form onSubmit={handleSignup}>
           <CardContent className="grid gap-4">
+             <div className="grid gap-2">
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
