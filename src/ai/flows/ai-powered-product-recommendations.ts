@@ -14,7 +14,7 @@ import {z} from 'genkit';
 const ProductRecommendationsInputSchema = z.object({
   purchaseHistory: z.array(z.string()).describe('List of product IDs the user has purchased.'),
   sustainabilityPreferences: z.array(z.string()).describe('List of sustainability preferences of the user (e.g., vegan, cruelty-free, plastic-free).'),
-  skinType: z.string().describe('The user\u2019s skin type (e.g., oily, dry, sensitive).'),
+  skinType: z.string().describe('The user’s skin type (e.g., oily, dry, sensitive).'),
   products: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -65,8 +65,7 @@ export const productRecommendationsFlow = ai.defineFlow(
     outputSchema: ProductRecommendationsOutputSchema,
   },
   async (input) => {
-    const llmResponse = await productRecommendationsPrompt(input);
-    const output = llmResponse.output();
+    const {output} = await productRecommendationsPrompt(input);
     if (!output) {
       return { recommendations: [] };
     }
