@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, ShoppingBag } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +17,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const placeholder = placeholderImages.find((p) => p.id === product.imageId);
   const { isProductInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,6 +28,12 @@ export default function ProductCard({ product }: ProductCardProps) {
       addToWishlist(product.id);
     }
   };
+
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+  }
 
   return (
     <Card className="group overflow-hidden rounded-lg border-none shadow-none transition-all duration-300 ease-in-out hover:shadow-xl">
@@ -53,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                <div className="translate-y-4 transition-transform duration-300 group-hover:translate-y-0">
-                <Button variant="secondary" size="sm" className="w-full">
+                <Button variant="secondary" size="sm" className="w-full" onClick={handleAddToCartClick}>
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     Adicionar
                 </Button>

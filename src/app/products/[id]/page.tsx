@@ -1,3 +1,5 @@
+'use client';
+
 import { products } from '@/lib/products';
 import { placeholderImages } from '@/lib/data';
 import { notFound } from 'next/navigation';
@@ -10,6 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Leaf, Recycle, Shield } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 
 export default function ProductDetailPage({
   params,
@@ -17,6 +20,7 @@ export default function ProductDetailPage({
   params: { id: string };
 }) {
   const product = products.find((p) => p.id === params.id);
+  const { addToCart } = useCart();
 
   if (!product) {
     notFound();
@@ -51,7 +55,7 @@ export default function ProductDetailPage({
           </p>
 
           <div className="mt-8">
-            <Button size="lg" className="w-full wave-animate">
+            <Button size="lg" className="w-full wave-animate" onClick={() => addToCart(product)}>
               Adicionar ao Carrinho
             </Button>
           </div>
