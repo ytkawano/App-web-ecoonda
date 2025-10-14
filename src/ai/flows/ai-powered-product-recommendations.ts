@@ -101,7 +101,7 @@ export async function getProductSearchQuery(
 
 
 // 6. FILTERING FUNCTION (to be used in server action)
-export function filterProductsByQuery(products: Product[], query: ProductSearchQueryOutput, purchaseHistory: string[]): Product[] {
+export async function filterProductsByQuery(products: Product[], query: ProductSearchQueryOutput, purchaseHistory: string[]): Promise<Product[]> {
   return products
     .filter(p => !purchaseHistory.includes(p.id))
     .map(product => {
