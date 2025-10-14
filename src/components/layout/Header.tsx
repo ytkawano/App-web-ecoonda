@@ -28,6 +28,7 @@ const mainNavLinks = [
   { href: '/shop', label: 'Loja' },
   { href: '/recommendations', label: 'Para Você' },
   { href: '/about', label: 'Sobre' },
+  { href: '/sustainability', label: 'Sustentabilidade' },
 ];
 
 export function Header() {
@@ -65,7 +66,7 @@ export function Header() {
             href={href}
             onClick={() => isMobile && setIsMobileMenuOpen(false)}
             className={cn(
-              'text-sm font-medium transition-colors hover:text-accent',
+              'text-sm font-medium transition-colors hover:text-accent wave-hover',
               isActive ? 'text-accent' : 'text-foreground/80',
               isMobile && 'block px-4 py-2 text-base'
             )}
@@ -80,7 +81,7 @@ export function Header() {
             href="/account"
             onClick={() => isMobile && setIsMobileMenuOpen(false)}
             className={cn(
-              'text-sm font-medium transition-colors hover:text-accent',
+              'text-sm font-medium transition-colors hover:text-accent wave-hover',
               pathname.startsWith('/account') || pathname.startsWith('/dashboard') ? 'text-accent' : 'text-foreground/80',
               isMobile && 'block px-4 py-2 text-base'
             )}

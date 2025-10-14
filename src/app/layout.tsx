@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -7,8 +10,10 @@ import { AuthProvider } from '@/context/AuthContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CartProvider } from '@/context/CartContext';
 import { Toaster } from '@/components/ui/toaster';
+import { AnimatePresence } from 'framer-motion';
+import SplashScreen from '@/components/layout/SplashScreen';
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: 'ECOONDA: Beleza Marinha',
   description:
     'Descubra cosméticos sustentáveis e veganos inspirados no oceano. Junte-se à nossa missão por um planeta mais limpo.',
@@ -19,9 +24,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500); 
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <title>{String(metadata.title)}</title>
+        <meta name="description" content={String(metadata.description)} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -38,14 +55,20 @@ export default function RootLayout({
           'min-h-screen bg-background font-body text-foreground antialiased'
         )}
       >
+        <AnimatePresence>
+          {isLoading && <SplashScreen />}
+        </AnimatePresence>
+        
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
+              {!isLoading && (
+                <div className="relative flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+              )}
               <Toaster />
             </CartProvider>
           </WishlistProvider>
