@@ -10,18 +10,33 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Lock } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (!authLoading && cart.length === 0) {
+      router.push('/');
+    }
+  }, [cart, authLoading, router]);
+
+  if (authLoading || !user) {
+    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  }
 
   if (cart.length === 0) {
-    // Redirect to home if cart is empty, maybe show a toast
-    if (typeof window !== 'undefined') {
-        router.push('/');
-    }
-    return null; // Render nothing while redirecting
+    return <div className="flex h-screen items-center justify-center">Seu carrinho está vazio. Redirecionando...</div>;
   }
 
   const handlePayment = (e: React.FormEvent) => {
