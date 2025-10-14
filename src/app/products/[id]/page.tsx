@@ -101,9 +101,3 @@ export default function ProductDetailPage({
     </div>
   );
 }
-
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    id: product.id,
-  }));
-}
