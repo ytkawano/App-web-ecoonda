@@ -87,8 +87,8 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button size="lg" className="w-full">
-                  Finalizar Compra
+                <Button size="lg" className="w-full" asChild>
+                  <Link href="/checkout">Finalizar Compra</Link>
                 </Button>
               </CardFooter>
             </Card>
