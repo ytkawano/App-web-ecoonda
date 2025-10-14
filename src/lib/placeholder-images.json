@@ -7,6 +7,12 @@
       "imageHint": "ocean view"
     },
     {
+      "id": "sustainability-coral",
+      "description": "Vibrant coral reef as a hero for the sustainability page.",
+      "imageUrl": "https://picsum.photos/seed/202/1600/800",
+      "imageHint": "coral reef"
+    },
+    {
       "id": "serum-1",
       "description": "A bottle of facial serum on a sandy background.",
       "imageUrl": "https://picsum.photos/seed/101/600/800",

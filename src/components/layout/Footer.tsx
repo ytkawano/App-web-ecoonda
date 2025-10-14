@@ -83,13 +83,8 @@ export function Footer() {
                   Sobre Nós
                 </Link>
               </li>
-              <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent">
-                  Contato
-                </Link>
-              </li>
                <li>
-                <Link href="#" className="text-muted-foreground hover:text-accent">
+                <Link href="/sustainability" className="text-muted-foreground hover:text-accent">
                   Sustentabilidade
                 </Link>
               </li>
