@@ -1,6 +1,7 @@
 'use server';
 
-import { getProductSearchQuery, filterProductsByQuery } from '@/ai/flows/ai-powered-product-recommendations';
+import { getProductSearchQuery } from '@/ai/flows/ai-powered-product-recommendations';
+import { filterProductsByQuery } from '@/lib/product-filter';
 import { products as allProducts } from '@/lib/products';
 import { z } from 'zod';
 

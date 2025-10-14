@@ -4,14 +4,12 @@
  * @fileOverview Provides AI-powered product recommendations by generating a search query.
  *
  * - getProductSearchQuery - A function that returns a search query based on user preferences.
- * - filterProductsByQuery - A function to filter products based on the AI-generated query.
  * - ProductSearchQueryInput - The input type for the getProductSearchQuery function.
  * - ProductSearchQueryOutput - The return type for the getProductSearchQuery function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import type { Product } from '@/lib/types';
 
 // 1. DEFINE INPUT SCHEMA
 const ProductSearchQueryInputSchema = z.object({
@@ -97,30 +95,4 @@ export async function getProductSearchQuery(
   input: ProductSearchQueryInput
 ): Promise<ProductSearchQueryOutput> {
   return productSearchQueryFlow(input);
-}
-
-
-// 6. FILTERING FUNCTION (to be used in server action)
-export async function filterProductsByQuery(products: Product[], query: ProductSearchQueryOutput, purchaseHistory: string[]): Promise<Product[]> {
-  return products
-    .filter(p => !purchaseHistory.includes(p.id))
-    .map(product => {
-      let score = 0;
-      if (query.category && product.category === query.category) {
-        score += 3;
-      }
-      if (query.suitableSkinTypes) {
-        if (query.suitableSkinTypes.some(st => product.suitableSkinTypes.includes(st))) {
-            score += 2;
-        }
-      }
-      if (query.sustainabilityAttributes) {
-        score += product.sustainabilityAttributes.filter(attr => query.sustainabilityAttributes?.includes(attr)).length;
-      }
-      return { product, score };
-    })
-    .filter(item => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map(item => item.product);
 }

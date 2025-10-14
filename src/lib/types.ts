@@ -37,3 +37,9 @@ export type ImpactBadge = {
   description: string;
   icon: React.ElementType;
 };
+
+export type ProductSearchQueryOutput = {
+    category?: string;
+    sustainabilityAttributes?: string[];
+    suitableSkinTypes?: string[];
+}
