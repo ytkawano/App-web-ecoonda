@@ -26,6 +26,7 @@ import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
 import { Loader2, Wand2, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface RecommendationEngineProps {
   allProducts: Product[];
@@ -176,33 +177,41 @@ export default function RecommendationEngine({
         </form>
       </Card>
 
-      {state.recommendations && (
-        <div className="mt-12">
-            <div className="text-center mb-8">
-                <h2 className="font-headline text-3xl font-bold text-primary">
-                    Seus Resultados Personalizados
-                </h2>
-                <p className="text-muted-foreground">Com base no seu perfil, achamos que você vai adorar estes.</p>
-            </div>
-            {recommendedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    {recommendedProducts.map((product) => (
-                        <div key={product.id}>
-                            <ProductCard product={product} />
-                            <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
-                                <p className="flex items-start gap-2 text-accent-foreground/80">
-                                    <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent"/>
-                                    <span className='font-semibold'>Por que para você?</span> {product.justification}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p className='text-center text-muted-foreground'>Nenhuma recomendação encontrada para suas preferências específicas. Tente ajustar seu perfil!</p>
-            )}
-        </div>
-      )}
+      <AnimatePresence>
+        {state.recommendations && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            className="mt-12 overflow-hidden"
+          >
+              <div className="text-center mb-8">
+                  <h2 className="font-headline text-3xl font-bold text-primary">
+                      Seus Resultados Personalizados
+                  </h2>
+                  <p className="text-muted-foreground">Com base no seu perfil, achamos que você vai adorar estes.</p>
+              </div>
+              {recommendedProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                      {recommendedProducts.map((product) => (
+                          <div key={product.id}>
+                              <ProductCard product={product} />
+                              <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
+                                  <p className="flex items-start gap-2 text-accent-foreground/80">
+                                      <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent"/>
+                                      <span className='font-semibold'>Por que para você?</span> {product.justification}
+                                  </p>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <p className='text-center text-muted-foreground'>Nenhuma recomendação encontrada para suas preferências específicas. Tente ajustar seu perfil!</p>
+              )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

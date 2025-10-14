@@ -28,13 +28,35 @@ export type ProductRecommendationsInput = z.infer<typeof ProductRecommendationsI
 
 const RecommendedProductSchema = z.object({
   productId: z.string().describe('The ID of the recommended product.'),
-  justification: z.string().describe('A brief explanation of why this product is recommended for the user.'),
+  justification: z.string().describe('A brief, friendly, one-line explanation of why this product is recommended for the user. Example: "Por ser ótimo para pele oleosa e ter embalagem sem plástico."'),
 });
 
 const ProductRecommendationsOutputSchema = z.object({
-  recommendations: z.array(RecommendedProductSchema).describe('List of recommended products with justifications.')
+  recommendations: z.array(RecommendedProductSchema).describe('List of 3-5 recommended products with justifications.')
 });
 export type ProductRecommendationsOutput = z.infer<typeof ProductRecommendationsOutputSchema>;
+
+const productRecommendationsPrompt = ai.definePrompt({
+  name: 'productRecommendationsPrompt',
+  input: { schema: ProductRecommendationsInputSchema },
+  output: { schema: ProductRecommendationsOutputSchema },
+  prompt: `You are an AI assistant for ECOONDA, a sustainable cosmetic brand. Your goal is to provide personalized product recommendations.
+
+    Analyze the user's profile:
+    - Skin Type: {{{skinType}}}
+    - Sustainability Preferences: {{{json sustainabilityPreferences}}}
+    - Past Purchases (to avoid recommending again): {{{json purchaseHistory}}}
+
+    From the list of available products, select 3 to 5 that are the best match.
+    Available Products: {{{json products}}}
+
+    For each recommendation, create a short, friendly, single-sentence justification in Portuguese. The justification should connect the product to the user's skin type and/or sustainability preferences.
+
+    Example Justification: "É perfeito para sua pele mista e seu compromisso com embalagens sem plástico."
+
+    Return your answer in the valid JSON format defined by the output schema.`,
+});
+
 
 export const productRecommendationsFlow = ai.defineFlow(
   {
@@ -43,45 +65,11 @@ export const productRecommendationsFlow = ai.defineFlow(
     outputSchema: ProductRecommendationsOutputSchema,
   },
   async (input) => {
-    const prompt = `You are an AI assistant specializing in providing personalized product recommendations for ECOONDA, a sustainable vegan cosmetic brand.
-
-    Based on the user's purchase history, sustainability preferences, and skin type, recommend up to 3 products that align with their values and needs. For each recommendation, provide a short, friendly justification explaining *why* it's a good fit.
-
-    User Profile:
-    - Purchase History: ${JSON.stringify(input.purchaseHistory)}
-    - Sustainability Preferences: ${JSON.stringify(input.sustainabilityPreferences)}
-    - Skin Type: ${input.skinType}
-    
-    Available Products: ${JSON.stringify(input.products)}
-
-    Your response MUST be a valid JSON object matching this format exactly: 
-    { 
-      "recommendations": [
-        { 
-          "productId": "prod_001", 
-          "justification": "Because you like products with plastic-free packaging and have dry skin, this hydrating serum is a perfect match."
-        },
-        { 
-          "productId": "prod_002", 
-          "justification": "This shampoo is great for oily hair and is made with recycled materials, which aligns with your preferences."
-        }
-      ]
-    }`;
-
-    const llmResponse = await ai.generate(prompt);
-    const textResponse = llmResponse.text;
-
-    try {
-      const parsed = JSON.parse(textResponse);
-      // Validate the parsed structure against the Zod schema
-      return ProductRecommendationsOutputSchema.parse(parsed);
-    } catch (e) {
-        console.error("Failed to parse or validate LLM response", e, textResponse);
-        // Return an empty recommendation list in case of failure
-        return { recommendations: [] };
-    }
+    const llmResponse = await productRecommendationsPrompt(input);
+    return llmResponse.output() || { recommendations: [] };
   }
 );
+
 
 export async function getProductRecommendations(input: ProductRecommendationsInput): Promise<ProductRecommendationsOutput> {
     return productRecommendationsFlow(input);
