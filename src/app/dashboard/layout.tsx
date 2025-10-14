@@ -3,7 +3,9 @@
 import { cn } from '@/lib/utils';
 import { Award, BarChart2, QrCode } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 const dashboardNavLinks = [
   { href: '/dashboard/impact', label: 'Meu Impacto', icon: BarChart2 },
@@ -17,6 +19,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return <div className="flex h-screen items-center justify-center">Carregando o painel...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

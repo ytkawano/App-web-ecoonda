@@ -1,7 +1,10 @@
+'use client';
+
 import EcoChallenges from "@/components/dashboard/EcoChallenges";
 import { challenges } from "@/lib/data";
 
 export default function ChallengesPage() {
+    // TODO: Replace with real data from Firestore
     return (
         <div>
             <h1 className="mb-6 font-headline text-4xl font-bold text-primary">
