@@ -1,8 +1,7 @@
 'use server';
 
-import { getProductRecommendations } from '@/ai/flows/ai-powered-product-recommendations';
+import { getProductSearchQuery, filterProductsByQuery } from '@/ai/flows/ai-powered-product-recommendations';
 import { products as allProducts } from '@/lib/products';
-import type { Product } from '@/lib/types';
 import { z } from 'zod';
 
 const recommendationSchema = z.object({
@@ -14,7 +13,6 @@ const recommendationSchema = z.object({
 export type RecommendationState = {
   recommendations?: {
     productId: string;
-    justification: string;
   }[];
   error?: string;
   key?: number;
@@ -35,24 +33,21 @@ export async function fetchRecommendations(
   }
 
   try {
-    const aiInput = {
-      ...validatedFields.data,
-      products: allProducts.map((p: Product) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        ingredients: p.ingredients.map(i => i.name),
-        sustainabilityAttributes: p.sustainabilityAttributes,
-        suitableSkinTypes: p.suitableSkinTypes,
-      })),
-    };
+    const aiInput = validatedFields.data;
 
-    const result = await getProductRecommendations(aiInput);
+    // 1. Get the search query from the AI
+    const searchQuery = await getProductSearchQuery(aiInput);
+
+    // 2. Filter products based on the AI's query
+    const recommendedProducts = filterProductsByQuery(allProducts, searchQuery, aiInput.purchaseHistory);
     
-    if (result && result.recommendations) {
-      return { recommendations: result.recommendations, key: Date.now() };
+    if (recommendedProducts.length > 0) {
+      return { 
+        recommendations: recommendedProducts.map(p => ({ productId: p.id })), 
+        key: Date.now() 
+      };
     } else {
-      return { error: 'Não foi possível gerar recomendações no momento.', key: Date.now() };
+      return { error: 'Não foi possível encontrar produtos para suas preferências.', key: Date.now() };
     }
   } catch (e) {
     console.error(e);

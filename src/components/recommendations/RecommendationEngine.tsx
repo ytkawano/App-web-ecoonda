@@ -24,7 +24,7 @@ import { fetchRecommendations } from '@/app/recommendations/actions';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
-import { Loader2, Wand2, Info } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -109,14 +109,9 @@ export default function RecommendationEngine({
   };
 
  const recommendedProducts =
-    state.recommendations?.map(rec => {
-        const product = allProducts.find(p => p.id === rec.productId);
-        if (!product) return null;
-        return {
-            ...product,
-            justification: rec.justification,
-        };
-    }).filter((p): p is Product & { justification: string } => p !== null) || [];
+    state.recommendations
+      ?.map(rec => allProducts.find(p => p.id === rec.productId))
+      .filter((p): p is Product => p !== undefined) || [];
 
 
   return (
@@ -198,12 +193,6 @@ export default function RecommendationEngine({
                       {recommendedProducts.map((product) => (
                           <div key={product.id}>
                               <ProductCard product={product} />
-                              <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
-                                  <p className="flex items-start gap-2 text-accent-foreground/80">
-                                      <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent"/>
-                                      <span className='font-semibold'>Por que para você?</span> {product.justification}
-                                  </p>
-                              </div>
                           </div>
                       ))}
                   </div>
