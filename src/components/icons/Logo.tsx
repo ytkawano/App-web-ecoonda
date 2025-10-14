@@ -1,16 +1,17 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { EcoondaLogo } from './EcoondaLogo';
 
 export function Logo({ className }: { className?: string }) {
   return (
     <Link
       href="/"
       className={cn(
-        'font-headline text-2xl font-bold tracking-tight text-primary transition-colors hover:text-accent',
+        'block transition-opacity hover:opacity-80',
         className
       )}
     >
-      ECOONDA
+      <EcoondaLogo />
     </Link>
   );
 }
