@@ -1,4 +1,4 @@
-// use server'
+'use server';
 
 /**
  * @fileOverview Provides AI-powered product recommendations based on user data.
@@ -31,40 +31,39 @@ const ProductRecommendationsOutputSchema = z.object({
 });
 export type ProductRecommendationsOutput = z.infer<typeof ProductRecommendationsOutputSchema>;
 
-export async function getProductRecommendations(input: ProductRecommendationsInput): Promise<ProductRecommendationsOutput> {
-  return productRecommendationsFlow(input);
-}
-
-const productRecommendationPrompt = ai.definePrompt({
-  name: 'productRecommendationPrompt',
-  input: {
-    schema: ProductRecommendationsInputSchema,
-  },
-  output: {
-    schema: ProductRecommendationsOutputSchema
-  },
-  prompt: `You are an AI assistant specializing in providing personalized product recommendations for ECOONDA, a sustainable vegan cosmetic brand.
-
-  Based on the user's purchase history, sustainability preferences, and skin type, recommend products that align with their values and needs.
-
-  Purchase History: {{purchaseHistory}}
-  Sustainability Preferences: {{sustainabilityPreferences}}
-  Skin Type: {{skinType}}
-  Available Products: {{products}}
-
-  Consider the ingredients, sustainability attributes, and suitable skin types of each product when making your recommendations.  Only return the product IDs of the recommended products.
-
-  Example Output: { \"recommendedProducts\": [\"product123\", \"product456\"] }`
-});
-
-const productRecommendationsFlow = ai.defineFlow(
+export const productRecommendationsFlow = ai.defineFlow(
   {
     name: 'productRecommendationsFlow',
     inputSchema: ProductRecommendationsInputSchema,
     outputSchema: ProductRecommendationsOutputSchema,
   },
-  async input => {
-    const {output} = await productRecommendationPrompt(input);
-    return output!;
+  async (input) => {
+    const prompt = `You are an AI assistant specializing in providing personalized product recommendations for ECOONDA, a sustainable vegan cosmetic brand.
+
+    Based on the user's purchase history, sustainability preferences, and skin type, recommend products that align with their values and needs.
+
+    Purchase History: ${JSON.stringify(input.purchaseHistory)}
+    Sustainability Preferences: ${JSON.stringify(input.sustainabilityPreferences)}
+    Skin Type: ${input.skinType}
+    Available Products: ${JSON.stringify(input.products)}
+
+    Consider the ingredients, sustainability attributes, and suitable skin types of each product when making your recommendations.  Only return the product IDs of the recommended products.
+
+    You must respond with only a valid JSON object matching this format: { "recommendedProducts": ["product123", "product456"] }`;
+
+    const llmResponse = await ai.generate(prompt);
+    const textResponse = llmResponse.text;
+
+    try {
+      return JSON.parse(textResponse);
+    } catch (e) {
+        console.error("Failed to parse LLM response", e, textResponse);
+        // Return an empty recommendation list in case of parsing failure
+        return { recommendedProducts: [] };
+    }
   }
 );
+
+export async function getProductRecommendations(input: ProductRecommendationsInput): Promise<ProductRecommendationsOutput> {
+    return productRecommendationsFlow(input);
+}

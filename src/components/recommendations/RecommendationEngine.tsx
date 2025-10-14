@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Card,
   CardContent,
@@ -24,7 +25,7 @@ import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
 import { Loader2, Wand2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface RecommendationEngineProps {
   allProducts: Product[];
@@ -77,7 +78,7 @@ export default function RecommendationEngine({
   allProducts,
   initialPreferences,
 }: RecommendationEngineProps) {
-  const [state, formAction] = useFormState(fetchRecommendations, {});
+  const [state, formAction] = useActionState(fetchRecommendations, {});
   const [skinType, setSkinType] = useState(initialPreferences.skinType);
   const [sustainabilityPrefs, setSustainabilityPrefs] = useState(
     new Set(initialPreferences.sustainabilityPreferences)

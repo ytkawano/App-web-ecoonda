@@ -2,12 +2,25 @@
 
 import { Logo } from '@/components/icons/Logo';
 import { cn } from '@/lib/utils';
-import { Menu, ShoppingCart, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '../ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { useState } from 'react';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { useWishlist } from '@/context/WishlistContext';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/components/ui/use-toast';
+import { Menu, ShoppingCart, User, Heart, LogOut } from 'lucide-react';
 
 const mainNavLinks = [
   { href: '/', label: 'Loja' },
@@ -18,6 +31,14 @@ const mainNavLinks = [
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const { wishlist } = useWishlist();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    toast({ title: "Você saiu da sua conta." });
+  };
 
   const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
     <>
@@ -43,6 +64,40 @@ export function Header() {
       })}
     </>
   );
+
+  const UserMenu = () => {
+    if (loading) return null;
+
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="wave-hover">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Minha Conta</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/account">Minha Conta</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sair</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <Button variant="ghost" asChild>
+        <Link href="/login">Login</Link>
+      </Button>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -76,10 +131,18 @@ export function Header() {
             <NavLinks />
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="wave-hover">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Conta</span>
-            </Button>
+            <UserMenu />
+            <Link href="/wishlist" passHref>
+              <Button variant="ghost" size="icon" className="relative wave-hover">
+                <Heart className="h-5 w-5" />
+                <span className="sr-only">Lista de Desejos</span>
+                {wishlist.length > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" className="wave-hover">
               <ShoppingCart className="h-5 w-5" />
               <span className="sr-only">Carrinho</span>
