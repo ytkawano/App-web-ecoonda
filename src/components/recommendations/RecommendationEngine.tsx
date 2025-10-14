@@ -24,7 +24,7 @@ import { fetchRecommendations } from '@/app/recommendations/actions';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface RecommendationEngineProps {
@@ -107,10 +107,16 @@ export default function RecommendationEngine({
     });
   };
 
-  const recommendedProducts =
-    state.recommendedProductIds?.map((id) =>
-      allProducts.find((p) => p.id === id)
-    ).filter((p): p is Product => p !== undefined) || [];
+ const recommendedProducts =
+    state.recommendations?.map(rec => {
+        const product = allProducts.find(p => p.id === rec.productId);
+        if (!product) return null;
+        return {
+            ...product,
+            justification: rec.justification,
+        };
+    }).filter((p): p is Product & { justification: string } => p !== null) || [];
+
 
   return (
     <div>
@@ -170,7 +176,7 @@ export default function RecommendationEngine({
         </form>
       </Card>
 
-      {state.recommendedProductIds && (
+      {state.recommendations && (
         <div className="mt-12">
             <div className="text-center mb-8">
                 <h2 className="font-headline text-3xl font-bold text-primary">
@@ -179,9 +185,17 @@ export default function RecommendationEngine({
                 <p className="text-muted-foreground">Com base no seu perfil, achamos que você vai adorar estes.</p>
             </div>
             {recommendedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     {recommendedProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <div key={product.id}>
+                            <ProductCard product={product} />
+                            <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
+                                <p className="flex items-start gap-2 text-accent-foreground/80">
+                                    <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent"/>
+                                    <span className='font-semibold'>Por que para você?</span> {product.justification}
+                                </p>
+                            </div>
+                        </div>
                     ))}
                 </div>
             ) : (

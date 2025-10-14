@@ -12,7 +12,10 @@ const recommendationSchema = z.object({
 });
 
 export type RecommendationState = {
-  recommendedProductIds?: string[];
+  recommendations?: {
+    productId: string;
+    justification: string;
+  }[];
   error?: string;
 };
 
@@ -45,8 +48,8 @@ export async function fetchRecommendations(
 
     const result = await getProductRecommendations(aiInput);
     
-    if (result && result.recommendedProducts) {
-      return { recommendedProductIds: result.recommendedProducts };
+    if (result && result.recommendations) {
+      return { recommendations: result.recommendations };
     } else {
       return { error: 'Não foi possível gerar recomendações no momento.' };
     }
