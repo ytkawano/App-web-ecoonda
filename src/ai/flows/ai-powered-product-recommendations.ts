@@ -47,8 +47,7 @@ const productRecommendationsPrompt = ai.definePrompt({
     - Sustainability Preferences: {{{json sustainabilityPreferences}}}
     - Past Purchases (to avoid recommending again): {{{json purchaseHistory}}}
 
-    From the list of available products, select 3 to 5 that are the best match.
-    Available Products: {{{json products}}}
+    From the list of available products provided in the 'products' input object, select 3 to 5 that are the best match.
 
     For each recommendation, create a short, friendly, single-sentence justification in Portuguese. The justification should connect the product to the user's skin type and/or sustainability preferences.
 
