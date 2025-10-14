@@ -40,20 +40,30 @@ const productRecommendationsPrompt = ai.definePrompt({
   name: 'productRecommendationsPrompt',
   input: { schema: ProductRecommendationsInputSchema },
   output: { schema: ProductRecommendationsOutputSchema },
-  prompt: `You are an AI assistant for ECOONDA, a sustainable cosmetic brand. Your goal is to provide personalized product recommendations.
+  prompt: `You are an AI assistant for ECOONDA, a sustainable cosmetic brand. Your goal is to provide 3-5 personalized product recommendations based on a user's profile and a list of available products.
 
-    Analyze the user's profile:
+    USER PROFILE:
     - Skin Type: {{{skinType}}}
     - Sustainability Preferences: {{{json sustainabilityPreferences}}}
-    - Past Purchases (to avoid recommending again): {{{json purchaseHistory}}}
+    - Purchase History (Do not recommend these): {{{json purchaseHistory}}}
 
-    From the list of available products provided in the 'products' input object, select 3 to 5 that are the best match.
+    AVAILABLE PRODUCTS:
+    {{#each products}}
+    - Product ID: {{id}}
+      Name: {{name}}
+      Description: {{description}}
+      Suitable for Skin Types: {{json suitableSkinTypes}}
+      Sustainability Attributes: {{json sustainabilityAttributes}}
+    {{/each}}
 
-    For each recommendation, create a short, friendly, single-sentence justification in Portuguese. The justification should connect the product to the user's skin type and/or sustainability preferences.
-
-    Example Justification: "É perfeito para sua pele mista e seu compromisso com embalagens sem plástico."
-
-    Return your answer in the valid JSON format defined by the output schema.`,
+    INSTRUCTIONS:
+    1.  Analyze the user's profile.
+    2.  Review the list of available products.
+    3.  Select 3 to 5 products that are the best match for the user's skin type and sustainability preferences.
+    4.  Do NOT recommend products from the user's purchase history.
+    5.  For each recommendation, create a short, friendly, single-sentence justification in Portuguese.
+    6.  Return your final answer in the valid JSON format defined by the output schema.
+  `,
 });
 
 
