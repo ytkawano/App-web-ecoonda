@@ -24,7 +24,7 @@ import { Menu, ShoppingCart, User, Heart, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 
 const mainNavLinks = [
-  { href: '/', label: 'Loja' },
+  { href: '/shop', label: 'Loja' },
   { href: '/recommendations', label: 'Para Você' },
   { href: '/about', label: 'Sobre' },
 ];

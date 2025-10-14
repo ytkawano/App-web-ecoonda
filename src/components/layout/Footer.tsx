@@ -74,7 +74,7 @@ export function Footer() {
             <h4 className="font-headline font-semibold">Navegue</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/" className="text-muted-foreground hover:text-accent">
+                <Link href="/shop" className="text-muted-foreground hover:text-accent">
                   Loja
                 </Link>
               </li>
