@@ -1,8 +1,7 @@
 'use server';
 
-import { getProductSearchQuery } from '@/ai/flows/ai-powered-product-recommendations';
-import { filterProductsByQuery } from '@/lib/product-filter';
 import { products as allProducts } from '@/lib/products';
+import { Product } from '@/lib/types';
 import { z } from 'zod';
 
 const recommendationSchema = z.object({
@@ -19,6 +18,34 @@ export type RecommendationState = {
   key?: number;
 };
 
+// This function filters products based on a simple scoring mechanism.
+function getScoredRecommendations(
+  products: Product[],
+  skinType: string,
+  sustainabilityPreferences: string[],
+  purchaseHistory: string[]
+): Product[] {
+  return products
+    .filter(p => !purchaseHistory.includes(p.id))
+    .map(product => {
+      let score = 0;
+      // High score for matching skin type
+      if (product.suitableSkinTypes.includes(skinType) || product.suitableSkinTypes.includes('todos')) {
+        score += 3;
+      }
+      // Add score for each matching sustainability attribute
+      score += product.sustainabilityAttributes.filter(attr =>
+        sustainabilityPreferences.includes(attr)
+      ).length;
+      
+      return { product, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => item.product);
+}
+
 export async function fetchRecommendations(
   prevState: RecommendationState,
   formData: FormData
@@ -34,13 +61,15 @@ export async function fetchRecommendations(
   }
 
   try {
-    const aiInput = validatedFields.data;
+    const { skinType, sustainabilityPreferences, purchaseHistory } = validatedFields.data;
 
-    // 1. Get the search query from the AI
-    const searchQuery = await getProductSearchQuery(aiInput);
-
-    // 2. Filter products based on the AI's query
-    const recommendedProducts = filterProductsByQuery(allProducts, searchQuery, aiInput.purchaseHistory);
+    // Get recommendations using the new scoring logic
+    const recommendedProducts = getScoredRecommendations(
+        allProducts, 
+        skinType,
+        sustainabilityPreferences,
+        purchaseHistory
+    );
     
     if (recommendedProducts.length > 0) {
       return { 
@@ -52,6 +81,6 @@ export async function fetchRecommendations(
     }
   } catch (e) {
     console.error(e);
-    return { error: 'Ocorreu um erro inesperado ao se comunicar com a IA.', key: Date.now() };
+    return { error: 'Ocorreu um erro inesperado ao gerar suas recomendações.', key: Date.now() };
   }
 }
