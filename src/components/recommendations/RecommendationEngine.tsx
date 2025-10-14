@@ -79,7 +79,7 @@ export default function RecommendationEngine({
   allProducts,
   initialPreferences,
 }: RecommendationEngineProps) {
-  const [state, formAction] = useActionState(fetchRecommendations, {});
+  const [state, formAction] = useActionState(fetchRecommendations, { key: Date.now() });
   const [skinType, setSkinType] = useState(initialPreferences.skinType);
   const [sustainabilityPrefs, setSustainabilityPrefs] = useState(
     new Set(initialPreferences.sustainabilityPreferences)
@@ -94,7 +94,7 @@ export default function RecommendationEngine({
         description: state.error,
       });
     }
-  }, [state.error, toast]);
+  }, [state.error, state.key, toast]);
 
   const handleCheckboxChange = (pref: string, checked: boolean) => {
     setSustainabilityPrefs((prev) => {
@@ -180,6 +180,7 @@ export default function RecommendationEngine({
       <AnimatePresence>
         {state.recommendations && (
           <motion.div
+            key={state.key}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}

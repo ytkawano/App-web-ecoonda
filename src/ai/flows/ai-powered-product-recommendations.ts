@@ -28,7 +28,7 @@ export type ProductRecommendationsInput = z.infer<typeof ProductRecommendationsI
 
 const RecommendedProductSchema = z.object({
   productId: z.string().describe('The ID of the recommended product.'),
-  justification: z.string().describe('A brief, friendly, one-line explanation of why this product is recommended for the user. Example: "Por ser ótimo para pele oleosa e ter embalagem sem plástico."'),
+  justification: z.string().describe('A brief, friendly, one-line explanation in Portuguese of why this product is recommended for the user. Example: "Por ser ótimo para pele oleosa e ter embalagem sem plástico."'),
 });
 
 const ProductRecommendationsOutputSchema = z.object({
@@ -66,7 +66,11 @@ export const productRecommendationsFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await productRecommendationsPrompt(input);
-    return llmResponse.output() || { recommendations: [] };
+    const output = llmResponse.output();
+    if (!output) {
+      return { recommendations: [] };
+    }
+    return output;
   }
 );
 

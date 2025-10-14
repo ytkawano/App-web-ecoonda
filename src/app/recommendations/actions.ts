@@ -17,6 +17,7 @@ export type RecommendationState = {
     justification: string;
   }[];
   error?: string;
+  key?: number;
 };
 
 export async function fetchRecommendations(
@@ -30,7 +31,7 @@ export async function fetchRecommendations(
   });
 
   if (!validatedFields.success) {
-    return { error: 'Dados de entrada inválidos.' };
+    return { error: 'Dados de entrada inválidos.', key: Date.now() };
   }
 
   try {
@@ -49,12 +50,12 @@ export async function fetchRecommendations(
     const result = await getProductRecommendations(aiInput);
     
     if (result && result.recommendations) {
-      return { recommendations: result.recommendations };
+      return { recommendations: result.recommendations, key: Date.now() };
     } else {
-      return { error: 'Não foi possível gerar recomendações no momento.' };
+      return { error: 'Não foi possível gerar recomendações no momento.', key: Date.now() };
     }
   } catch (e) {
     console.error(e);
-    return { error: 'Ocorreu um erro inesperado.' };
+    return { error: 'Ocorreu um erro inesperado ao se comunicar com a IA.', key: Date.now() };
   }
 }
