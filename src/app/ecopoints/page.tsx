@@ -48,12 +48,10 @@ export default function EcoPointsPage() {
   const firestore = useFirestore();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user || !firestore) {
-        setLoading(false);
         return;
       }
       
@@ -72,22 +70,34 @@ export default function EcoPointsPage() {
               return challenge;
           });
           setUserChallenges(challengesWithProgress);
+        } else {
+             // Create a default profile if it doesn't exist
+             const defaultProfile: UserProfile = {
+                uid: user.uid,
+                email: user.email!,
+                displayName: user.displayName || 'Usuário',
+                photoURL: user.photoURL || '',
+                address: { street: '', number: '', city: '', state: '' },
+                ecoPoints: 0,
+                plasticSaved: 0,
+                co2Avoided: 0,
+                returnsMade: 0,
+                earnedBadges: [],
+                purchaseHistory: [],
+            };
+            setUserData(defaultProfile);
         }
       } catch (error) {
           console.error("Failed to fetch user data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    if (!authLoading) {
-      fetchUserData();
-    }
-  }, [user, authLoading, firestore]);
+    fetchUserData();
+  }, [user, firestore]);
 
   const earnedBadges = impactBadges.filter(b => userData?.earnedBadges?.includes(b.name));
 
-  if (loading || authLoading) {
+  if (authLoading) {
     return (
         <div className="container mx-auto max-w-7xl px-4 py-12">
             <header className="mb-12 flex flex-col items-center justify-between gap-6 sm:flex-row">
