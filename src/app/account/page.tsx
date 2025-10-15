@@ -122,7 +122,7 @@ export default function AccountPage() {
     }
 
     const addressString = [userData.address?.street, userData.address?.number, userData.address?.city, userData.address?.state].filter(Boolean).join(', ') || 'Não informado';
-    const earnedBadges = impactBadges.filter(b => userData.earnedBadges.includes(b.name));
+    const earnedBadges = impactBadges.filter(b => (userData.earnedBadges || []).includes(b.name));
 
 
   return (
