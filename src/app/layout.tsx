@@ -8,7 +8,6 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext"; // Importação adicionada
 import SplashScreen from "@/components/layout/SplashScreen";
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
@@ -37,7 +36,6 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
-        <SpeedInsights />
       </body>
     </html>
   );
