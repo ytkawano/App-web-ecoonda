@@ -48,10 +48,12 @@ export default function EcoPointsPage() {
   const firestore = useFirestore();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user || !firestore) {
+        setLoading(false);
         return;
       }
       
@@ -89,15 +91,16 @@ export default function EcoPointsPage() {
         }
       } catch (error) {
           console.error("Failed to fetch user data:", error);
+      } finally {
+        setLoading(false);
       }
     };
+    if (!authLoading) {
+      fetchUserData();
+    }
+  }, [user, firestore, authLoading]);
 
-    fetchUserData();
-  }, [user, firestore]);
-
-  const earnedBadges = impactBadges.filter(b => userData?.earnedBadges?.includes(b.name));
-
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
         <div className="container mx-auto max-w-7xl px-4 py-12">
             <header className="mb-12 flex flex-col items-center justify-between gap-6 sm:flex-row">
@@ -124,9 +127,19 @@ export default function EcoPointsPage() {
     )
   }
   
-  if (!user || !userData) {
+  if (!user) {
       return <div className='container mx-auto text-center py-12'>Faça login para ver seus EcoPoints.</div>
   }
+
+  const currentData = userData || {
+    ecoPoints: 0,
+    plasticSaved: 0,
+    co2Avoided: 0,
+    returnsMade: 0,
+    earnedBadges: [],
+  };
+
+  const earnedBadges = impactBadges.filter(b => (currentData.earnedBadges || []).includes(b.name));
 
   return (
     <div className="bg-background min-h-screen text-foreground">
@@ -144,7 +157,7 @@ export default function EcoPointsPage() {
           <div className="flex items-center gap-4 rounded-full bg-card p-4 shadow-md">
             <Leaf className="h-10 w-10 text-green-500" />
             <div className="text-right">
-              <span className="block text-3xl font-bold text-primary">{userData.ecoPoints}</span>
+              <span className="block text-3xl font-bold text-primary">{currentData.ecoPoints}</span>
               <span className="text-sm text-muted-foreground">EcoPoints</span>
             </div>
           </div>
@@ -167,10 +180,10 @@ export default function EcoPointsPage() {
                   <CardDescription>Pequenas ações, grande diferença.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                    <ImpactStat value={`${userData.plasticSaved / 1000}kg`} label="Plástico Economizado" icon={Shield} />
-                    <ImpactStat value={`${userData.co2Avoided}kg`} label="CO₂ Evitado" icon={Sprout} />
-                    <ImpactStat value={userData.returnsMade} label="Devoluções Feitas" icon={Recycle} />
-                    <ImpactStat value={userData.ecoPoints} label="Total de Pontos" icon={Leaf} />
+                    <ImpactStat value={`${(currentData.plasticSaved / 1000).toFixed(2)}kg`} label="Plástico Economizado" icon={Shield} />
+                    <ImpactStat value={`${currentData.co2Avoided.toFixed(2)}kg`} label="CO₂ Evitado" icon={Sprout} />
+                    <ImpactStat value={currentData.returnsMade} label="Devoluções Feitas" icon={Recycle} />
+                    <ImpactStat value={currentData.ecoPoints} label="Total de Pontos" icon={Leaf} />
                 </CardContent>
               </Card>
 
