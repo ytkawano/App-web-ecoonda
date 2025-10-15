@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -285,3 +286,5 @@ export default function EcoPointsPage() {
     </div>
   );
 }
+
+    
