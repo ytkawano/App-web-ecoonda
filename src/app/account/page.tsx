@@ -69,7 +69,17 @@ export default function AccountPage() {
                 const userDocRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
-                    setAddress(docSnap.data().address || 'Não informado');
+                    const userData = docSnap.data();
+                    if (userData.address) {
+                        if (typeof userData.address === 'object') {
+                            const { street, number, city, state } = userData.address;
+                            setAddress([street, number, city, state].filter(Boolean).join(', '));
+                        } else {
+                             setAddress(userData.address || 'Não informado');
+                        }
+                    } else {
+                        setAddress('Não informado')
+                    }
                 }
             }
         };

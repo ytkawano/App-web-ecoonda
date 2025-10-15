@@ -18,7 +18,12 @@ export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState({
+    street: '',
+    number: '',
+    city: '',
+    state: '',
+  });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,12 +43,20 @@ export default function ProfilePage() {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
           if (docSnap.exists()) {
-              setAddress(docSnap.data().address || '');
+              const userData = docSnap.data();
+              if (userData.address && typeof userData.address === 'object') {
+                setAddress(userData.address);
+              }
           }
       };
       fetchUserData();
     }
   }, [user]);
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAddress(prev => ({...prev, [name]: value}));
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -146,16 +159,26 @@ export default function ProfilePage() {
                 required
               />
             </div>
-             <div className="space-y-2">
-              <Label htmlFor="address">Endereço</Label>
-              <Input
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Rua, número, bairro, cidade, estado"
-                required
-              />
+             
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="street">Rua</Label>
+                <Input name="street" id="street" value={address.street} onChange={handleAddressChange} placeholder="Ex: Av. Paulista" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="number">Número</Label>
+                <Input name="number" id="number" value={address.number} onChange={handleAddressChange} placeholder="Ex: 1000" required />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="city">Cidade</Label>
+                <Input name="city" id="city" value={address.city} onChange={handleAddressChange} placeholder="Ex: São Paulo" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">Estado</Label>
+                <Input name="state" id="state" value={address.state} onChange={handleAddressChange} placeholder="Ex: SP" required />
+              </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">E-mail (não pode ser alterado)</Label>
               <Input id="email" value={user.email || ''} disabled />
