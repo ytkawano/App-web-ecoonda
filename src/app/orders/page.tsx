@@ -34,10 +34,12 @@ export default function OrderHistoryPage() {
         const querySnapshot = await getDocs(ordersQuery);
         const userOrders = querySnapshot.docs.map(doc => {
             const data = doc.data();
+            // Convert Firestore Timestamp to JavaScript Date object
+            const createdAtDate = (data.createdAt as Timestamp)?.toDate ? (data.createdAt as Timestamp).toDate() : new Date();
             return {
                 id: doc.id,
                 ...data,
-                createdAt: (data.createdAt as Timestamp).toDate(),
+                createdAt: createdAtDate,
             } as Order;
         });
         setOrders(userOrders);
@@ -99,7 +101,7 @@ export default function OrderHistoryPage() {
                             <div className="mb-4 sm:mb-0">
                                 <h3 className="font-semibold text-lg">Pedido #{order.id.substring(0, 7)}...</h3>
                                 <p className="text-sm text-muted-foreground">
-                                {order.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                {new Date(order.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                 </p>
                             </div>
                             <div className="flex flex-col sm:items-end gap-2">
