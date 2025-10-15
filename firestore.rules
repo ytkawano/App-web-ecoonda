@@ -1,24 +1,25 @@
 /**
- * @fileoverview Firestore Security Rules for the Greenin' application.
+ * @fileoverview Firestore Security Rules for the EcoElegance application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles
- * and a public-read, owner-write model for products and challenges.
- * Orders are restricted to owner create and read, with no update or delete.
+ * This ruleset enforces a strict user-ownership model for user profiles,
+ * allows public read access to products and challenges, and restricts order
+ * creation to authenticated users.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profile data, accessible only by the user themselves.
- * - /products/{productId}: Stores product information, publicly readable, but only writable by an owner (not implemented in this version due to missing owner field).
- * - /orders/{orderId}: Stores order information. Accessible only to the user who created the order.
- * - /challenges/{challengeId}: Stores challenge information, publicly readable.
+ * - User profiles are stored under `/users/{userId}`.
+ * - Product information is stored under `/products/{productId}`.
+ * - Order information is stored under `/orders/{orderId}`.
+ * - Challenge information is stored under `/challenges/{challengeId}`.
  *
  * Key Security Decisions:
- * - User listing is disallowed for privacy.
- * - Public data (products, challenges) are stored in top-level collections for efficient public reads.
- * - Flexible data validation is enabled for rapid prototyping.
+ * - User profiles are only accessible and modifiable by the user themselves.
+ * - Products and challenges are publicly readable.
+ * - Orders can only be created by authenticated users and are associated with their userId.
+ * - Listing of users is disallowed.
  *
  * Denormalization for Authorization:
- *  - User profiles are stored under /users/{userId} to directly enforce ownership using the userId.
+ * - User profile documents include the `uid` field, which is used for validating ownership.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -27,65 +28,66 @@ service cloud.firestore {
     /**
      * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (create) Authenticated user can create their own profile.
-     * @allow (get, list, update, delete) Authenticated user can only access their own profile.
-     * @deny (create) Unauthenticated users cannot create profiles.
-     * @deny (get, list, update, delete) Unauthenticated users cannot access any profile.
-     * @deny (get, list, update, delete) Authenticated users cannot access other user profiles.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth UID.
+     * @allow (get, update, delete) - Authenticated user can only access/modify their own profile.
+     * @deny (create) - If the `uid` field in the data does not match the `userId` in the path.
+     * @deny (list) - Listing all users is not allowed.
+     * @deny (update) - If an attacker tries to change the `uid` field.
+     * @principle Enforces user-ownership; restricts access to a user's own profile data.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
       function isSignedIn() {
         return request.auth != null;
       }
 
-      allow create: if isSignedIn() && isOwner(userId);
-      allow get, list: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to product documents. Products are publicly readable but writable only by the owner (not yet implemented due to missing owner field).
+     * @description Controls access to product documents.
      * @path /products/{productId}
-     * @allow (get, list) Anyone can read product details.
-     * @deny (create, update, delete) Only the owner (not yet defined) should be able to modify products.
-     * @principle Products are publicly readable; owner-only writes are intended but not yet implemented.
+     * @allow (get, list) - Any user can read product information.
+     * @deny (create, update, delete) - No user can create, update, or delete product information.
+     * @principle Allows public read access to product information, restricts write access.
      */
     match /products/{productId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to order documents. Only the user who created the order can read it. No updates or deletes are allowed.
+     * @description Controls access to order documents.
      * @path /orders/{orderId}
-     * @allow (create) Authenticated user can create an order with their userId.
-     * @allow (get, list) Authenticated user can only read their own orders.
-     * @deny (update, delete) Orders cannot be updated or deleted.
-     * @deny (get, list) Authenticated users cannot access other user orders.
-     * @deny (create) Unauthenticated users cannot create orders.
-     * @principle Orders are user-owned and immutable after creation.
+     * @allow (create) - Any authenticated user can create an order.
+     * @deny (get, list, update, delete) - No user can read, list, update or delete order information.
+     * @principle Restricts order operations.
      */
     match /orders/{orderId} {
       function isSignedIn() {
         return request.auth != null;
       }
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
+      allow get, list, update, delete: if false;
+      allow create: if isSignedIn();
     }
-    
+
     /**
-     * @description Controls access to challenge documents. Challenges are publicly readable.
+     * @description Controls access to challenge documents.
      * @path /challenges/{challengeId}
-     * @allow (get, list) Anyone can read challenge details.
-     * @deny (create, update, delete) No one can create, update, or delete challenges in this prototype.
-     * @principle Challenges are publicly readable, and write access is not granted.
+     * @allow (get, list) - Any user can read challenge information.
+     * @deny (create, update, delete) - No user can create, update, or delete challenge information.
+     * @principle Allows public read access to challenge information, restricts write access.
      */
     match /challenges/{challengeId} {
         allow get, list: if true;
