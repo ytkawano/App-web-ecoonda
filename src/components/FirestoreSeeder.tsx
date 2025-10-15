@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase';
 import { products } from '@/lib/products';
 import { collection, writeBatch, doc } from 'firebase/firestore';
 import { useState } from 'react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function FirestoreSeeder() {
   const [loading, setLoading] = useState(false);
@@ -18,32 +20,41 @@ export default function FirestoreSeeder() {
       description: 'Adicionando produtos ao seu banco de dados. Isso pode levar um momento.',
     });
 
-    try {
-      const productsCollectionRef = collection(db, 'products');
-      const batch = writeBatch(db);
+    const productsCollectionRef = collection(db, 'products');
+    const batch = writeBatch(db);
 
-      products.forEach(product => {
-        // Use doc() to create a reference to a document with a specific ID
-        const docRef = doc(productsCollectionRef, product.id);
-        batch.set(docRef, product);
-      });
+    products.forEach(product => {
+      const docRef = doc(productsCollectionRef, product.id);
+      batch.set(docRef, product);
+    });
 
-      await batch.commit();
+    batch.commit()
+      .then(() => {
+        toast({
+          title: 'Produtos Adicionados!',
+          description: `${products.length} produtos foram adicionados com sucesso ao Firestore.`,
+        });
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error seeding Firestore:', error);
+        // This is a simplified context for a batch write.
+        // In a real scenario with single writes, we could provide more granular data.
+        const permissionError = new FirestorePermissionError({
+            path: 'products/[MULTIPLE]',
+            operation: 'create',
+            requestResourceData: { note: 'This was a batch write for all products.' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
 
-      toast({
-        title: 'Produtos Adicionados!',
-        description: `${products.length} produtos foram adicionados com sucesso ao Firestore.`,
+        // We still show a generic toast to the user. The detailed error is in the console for the developer.
+        toast({
+          variant: 'destructive',
+          title: 'Erro de Permissão',
+          description: 'Não foi possível adicionar os produtos. Verifique as regras de segurança do Firestore.',
+        });
+        setLoading(false);
       });
-    } catch (error) {
-      console.error('Error seeding Firestore:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro no Seed',
-        description: 'Não foi possível adicionar os produtos. Verifique o console para mais detalhes.',
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Only show this component in development environment
