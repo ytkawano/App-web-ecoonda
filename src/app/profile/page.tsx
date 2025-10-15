@@ -74,7 +74,6 @@ export default function ProfilePage() {
     let newPhotoURL = photoURL;
 
     try {
-      // 1. Upload new image if there is one
       if (imageFile) {
         setLoadingMessage('Enviando imagem...');
         const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
@@ -82,22 +81,25 @@ export default function ProfilePage() {
         newPhotoURL = await getDownloadURL(uploadResult.ref);
       }
 
-      // 2. Update Firebase Auth profile
       setLoadingMessage('Atualizando perfil...');
       await updateProfile(user, { 
           displayName, 
           photoURL: newPhotoURL 
       });
 
-      // 3. Update address in Firestore
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { address }, { merge: true });
+      await setDoc(userDocRef, { 
+          uid: user.uid,
+          email: user.email,
+          displayName: displayName,
+          photoURL: newPhotoURL,
+          address 
+      }, { merge: true });
 
       toast({
         title: 'Perfil Atualizado!',
         description: 'Suas informações foram salvas com sucesso.',
       });
-      // A small delay to let the user read the toast before redirecting
       setTimeout(() => router.push('/account'), 1000); 
     } catch (error) {
       console.error('Error updating profile:', error);
