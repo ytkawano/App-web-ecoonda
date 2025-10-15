@@ -1,4 +1,5 @@
-import type { Product, Challenge, UserImpact, ImpactBadge } from './types';
+
+import type { Product, Challenge, UserImpact, ImpactBadge, Reward, PointActivity, Order, WishlistItem } from './types';
 import placeholderJson from './placeholder-images.json';
 
 export const placeholderImages = placeholderJson.placeholderImages;
@@ -53,4 +54,48 @@ export const impactBadges: (Omit<ImpactBadge, 'icon'> & { icon: string })[] = [
     { name: 'Folha Verde', description: 'Alcançou 1000 eco pontos.', icon: 'Leaf' },
     { name: 'Campeão Ecológico', description: 'Completou 5 desafios.', icon: 'Award' },
     { name: 'Protetor do Planeta', description: 'Top 1% de usuários eco-conscientes.', icon: 'Star' },
+];
+
+export const rewards: Reward[] = [
+    { id: 'rew_001', title: 'R$ 10 de Desconto', description: 'Use em qualquer compra acima de R$ 50', pointsRequired: 500,},
+    { id: 'rew_002', title: 'R$ 25 de Desconto', description: 'Use em qualquer compra acima de R$ 100', pointsRequired: 1000, },
+    { id: 'rew_003', title: 'Frete Grátis', description: 'Para qualquer lugar do Brasil', pointsRequired: 750, },
+    { id: 'rew_004', title: 'Produto Grátis (Viagem)', description: 'Escolha um item em tamanho de viagem', pointsRequired: 1500, },
+    { id: 'rew_005', title: '50% de Desconto em um Item', description: 'Metade do preço no seu produto favorito', pointsRequired: 2500, },
+];
+
+export const pointHistory: PointActivity[] = [
+    { id: 'act_001', description: 'Compra de "Shampoo Força das Algas"', points: 45, date: '2024-07-15' },
+    { id: 'act_002', description: 'Devolucão de 3 embalagens', points: 75, date: '2024-07-10' },
+    { id: 'act_003', description: 'Compra de "Sérum Orvalho do Mar"', points: 60, date: '2024-07-02' },
+    { id: 'act_004', description: 'Completou o desafio "Virtuoso Vegano"', points: 75, date: '2024-06-28' },
+    { id: 'act_005', description: 'Bônus de Aniversário', points: 100, date: '2024-06-22' },
+];
+
+export const orders: Order[] = [
+    {
+        id: 'ord_001',
+        date: '2024-07-15',
+        status: 'Entregue',
+        total: 125.50,
+        items: [
+            { productId: 'prod_001', name: 'Shampoo Força das Algas', quantity: 1 },
+            { productId: 'prod_002', name: 'Condicionador Mar Profundo', quantity: 1 },
+        ]
+    },
+    {
+        id: 'ord_002',
+        date: '2024-06-22',
+        status: 'Entregue',
+        total: 89.90,
+        items: [
+            { productId: 'prod_003', name: 'Sérum Orvalho do Mar', quantity: 1 },
+        ]
+    }
+];
+
+export const wishlist: WishlistItem[] = [
+    { id: 'wish_001', productId: 'prod_004', name: 'Máscara de Argila Purificante', imageUrl: '/mascara de argila.jpeg' },
+    { id: 'wish_002', productId: 'prod_005', name: 'Esfoliante Corporal Renovador', imageUrl: '/esfoliante corporal.jpeg' },
+    { id: 'wish_003', productId: 'prod_006', name: 'Limpador Facial Coral Suave', imageUrl: '/limpador coral.jpeg' },
 ];

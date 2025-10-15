@@ -3,31 +3,31 @@
     {
       "id": "hero-ocean",
       "description": "A beautiful ocean view to be used as a hero image.",
-      "imageUrl": "https://picsum.photos/seed/201/1600/900",
-      "imageHint": "ocean view"
+      "imageUrl": "/hero%20homepage.jpg",
+      "imageHint": "hero homepage"
     },
     {
       "id": "sustainability-coral",
       "description": "Vibrant coral reef as a hero for the sustainability page.",
-      "imageUrl": "https://picsum.photos/seed/202/1600/800",
-      "imageHint": "coral reef"
+      "imageUrl": "/home/user/studio/public/sustentability image.jpg",
+      "imageHint": "sustainability image"
     },
     {
       "id": "serum-1",
-      "description": "A bottle of facial serum on a sandy background.",
-      "imageUrl": "https://picsum.photos/seed/101/600/800",
+      "description": "A bottle of facial serum.",
+      "imageUrl": "/serum%20orvalho.jpeg",
       "imageHint": "facial serum"
     },
     {
       "id": "shampoo-1",
       "description": "A shampoo bottle with seaweed.",
-      "imageUrl": "https://picsum.photos/seed/102/600/800",
+      "imageUrl": "/sahmpoo%20força%20das%20algas.jpeg",
       "imageHint": "shampoo bottle"
     },
     {
       "id": "cream-1",
       "description": "A jar of face cream with marine elements.",
-      "imageUrl": "https://picsum.photos/seed/103/600/800",
+      "imageUrl": "/mascara%20de%20argila.jpeg",
       "imageHint": "face cream"
     },
     {
@@ -39,19 +39,19 @@
     {
       "id": "conditioner-1",
       "description": "A conditioner bottle next to a shell.",
-      "imageUrl": "https://picsum.photos/seed/105/600/800",
+      "imageUrl": "/condicionador%20mar%20profundo.jpeg",
       "imageHint": "conditioner bottle"
     },
     {
       "id": "face-mask-1",
       "description": "A face mask tube with algae.",
-      "imageUrl": "https://picsum.photos/seed/106/600/800",
+      "imageUrl": "/mascara%20de%20argila.jpeg",
       "imageHint": "face mask"
     },
     {
       "id": "body-wash-1",
       "description": "A body scrub jar.",
-      "imageUrl": "https://picsum.photos/seed/107/600/800",
+      "imageUrl": "/esfoliante%20corporal.jpeg",
       "imageHint": "body scrub"
     },
     {
@@ -63,7 +63,7 @@
     {
       "id": "cleanser-1",
       "description": "A facial cleanser with water splashing.",
-      "imageUrl": "https://picsum.photos/seed/109/600/800",
+      "imageUrl": "/limpador%20coral.jpeg",
       "imageHint": "facial cleanser"
     }
   ]

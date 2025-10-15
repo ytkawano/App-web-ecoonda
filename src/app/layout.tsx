@@ -1,22 +1,21 @@
-'use client';
+import type { Metadata } from "next";
+import { Inter, Unbounded } from "next/font/google";
+import "./globals.css";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Toaster } from "@/components/ui/toaster";
+import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { WishlistProvider } from "@/context/WishlistContext"; // Importação adicionada
+import SplashScreen from "@/components/layout/SplashScreen";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
-import { useState, useEffect } from 'react';
-import type { Metadata } from 'next';
-import './globals.css';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { AuthProvider } from '@/context/AuthContext';
-import { WishlistProvider } from '@/context/WishlistContext';
-import { CartProvider } from '@/context/CartContext';
-import { Toaster } from '@/components/ui/toaster';
-import { AnimatePresence } from 'framer-motion';
-import SplashScreen from '@/components/layout/SplashScreen';
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
 
-const metadata: Metadata = {
-  title: 'ECOONDA: Beleza Marinha',
-  description:
-    'Descubra cosméticos sustentáveis e veganos inspirados no oceano. Junte-se à nossa missão por um planeta mais limpo.',
+export const metadata: Metadata = {
+  title: "Ecconda - Cosméticos Sustentáveis com IA",
+  description: "Descubra o poder da natureza com a Ecconda. Cosméticos veganos, sustentáveis e personalizados para sua pele e para o planeta com o uso de inteligência artificial.",
 };
 
 export default function RootLayout({
@@ -24,55 +23,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2500); 
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <title>{String(metadata.title)}</title>
-        <meta name="description" content={String(metadata.description)} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700;900&family=PT+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body
-        className={cn(
-          'min-h-screen bg-background font-body text-foreground antialiased'
-        )}
-      >
-        <AnimatePresence>
-          {isLoading && <SplashScreen />}
-        </AnimatePresence>
-        
+    <html lang="pt-BR">
+      <body className={`${inter.variable} ${unbounded.variable} font-sans`}>
         <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              {!isLoading && (
-                <div className="relative flex min-h-screen flex-col">
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-              )}
+          <CartProvider>
+            <WishlistProvider> {/* Provedor adicionado */}
+              <SplashScreen />
+              <Header />
+              <main>{children}</main>
+              <Footer />
               <Toaster />
-            </CartProvider>
-          </WishlistProvider>
+            </WishlistProvider>
+          </CartProvider>
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

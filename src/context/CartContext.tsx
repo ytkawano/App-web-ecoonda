@@ -8,6 +8,11 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
+interface Coupon {
+    code: string;
+    discount: number; // Pode ser um valor percentual ou fixo
+}
+
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
@@ -16,12 +21,16 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  coupon: Coupon | null;
+  applyCoupon: (coupon: Coupon) => void;
+  removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
   const { toast } = useToast();
 
   const addToCart = (product: Product, quantity: number = 1) => {
@@ -65,10 +74,35 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
+    setCoupon(null);
   };
   
+  const applyCoupon = (coupon: Coupon) => {
+      setCoupon(coupon);
+      toast({
+          title: "Cupom aplicado!",
+          description: `Desconto de ${coupon.discount}% foi aplicado.`,
+      })
+  }
+
+  const removeCoupon = () => {
+      setCoupon(null);
+      toast({
+          title: "Cupom removido",
+      })
+  }
+  
+  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-  const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  
+  const calculateTotalPrice = () => {
+      if(coupon) {
+          const discountAmount = (subtotal * coupon.discount) / 100;
+          return subtotal - discountAmount;
+      }
+      return subtotal;
+  }
+  const totalPrice = calculateTotalPrice();
 
   return (
     <CartContext.Provider
@@ -80,6 +114,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         totalItems,
         totalPrice,
+        coupon,
+        applyCoupon,
+        removeCoupon,
       }}
     >
       {children}

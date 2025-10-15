@@ -12,6 +12,12 @@ import { CreditCard, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
+import { placeholderImages } from '@/lib/placeholder-images.json';
+
+const imageMap = placeholderImages.reduce((acc, img) => {
+  acc[img.id] = img.imageUrl;
+  return acc;
+}, {} as Record<string, string>);
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
@@ -41,17 +47,14 @@ export default function CheckoutPage() {
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate payment processing
     console.log('Processing payment...');
 
-    // Clear cart and show success message
     clearCart();
     toast({
       title: 'Pagamento Aprovado!',
       description: 'Seu pedido foi realizado com sucesso. Obrigado por sua compra!',
     });
 
-    // Redirect to home page
     router.push('/');
   };
 
@@ -64,7 +67,6 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-        {/* Payment Details Form */}
         <div>
           <Card>
             <CardHeader>
@@ -107,7 +109,6 @@ export default function CheckoutPage() {
           </Card>
         </div>
 
-        {/* Order Summary */}
         <div className='order-first lg:order-last'>
           <Card>
             <CardHeader>
@@ -115,23 +116,26 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="max-h-64 overflow-y-auto pr-2 space-y-4">
-                {cart.map(item => (
-                  <div key={item.id} className="flex items-center gap-4">
-                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
-                        <Image
-                          src={`https://picsum.photos/seed/${item.imageId.split('-')[1]}/100/100`}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
+                {cart.map(item => {
+                  const imageUrl = imageMap[item.imageId] || '/placeholder.jpg';
+                  return (
+                    <div key={item.id} className="flex items-center gap-4">
+                       <div className="relative h-16 w-16 overflow-hidden rounded-md">
+                          <Image
+                            src={imageUrl}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">Qtd: {item.quantity}</p>
+                      </div>
+                      <p className="text-sm">R${(item.price * item.quantity).toFixed(2).replace('.', ',')}</p>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">Qtd: {item.quantity}</p>
-                    </div>
-                    <p className="text-sm">R${(item.price * item.quantity).toFixed(2).replace('.', ',')}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <Separator />
               <div className="space-y-2">

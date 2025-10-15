@@ -4,26 +4,22 @@ import ProductCard from '@/components/products/ProductCard';
 import { ArrowRight, Leaf, Waves, Recycle, Heart, WandSparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { placeholderImages } from '@/lib/data';
 
 export default function Home() {
-  const heroImage = placeholderImages.find(p => p.id === 'hero-ocean');
   const featuredProducts = products.slice(0, 3);
 
   return (
     <div className="bg-background text-foreground">
       {/* Hero Section */}
       <section className="relative h-[70vh] w-full text-center text-white">
-        {heroImage && 
-            <Image
-                src={heroImage.imageUrl}
-                alt="Ondas do oceano"
-                data-ai-hint="ocean waves texture"
-                fill
-                className="object-cover"
-                priority
-            />
-        }
+        <Image
+            src={"/hero%20homepage.jpg"}
+            alt="Página inicial da Ecconda"
+            data-ai-hint="hero homepage"
+            fill
+            className="object-cover"
+            priority
+        />
         <div className="relative z-10 flex h-full flex-col items-center justify-center bg-black/40 p-4">
           <h1 className="mb-4 font-headline text-5xl font-black tracking-tight drop-shadow-md md:text-7xl">
             Descubra o poder da natureza com tecnologia inteligente.

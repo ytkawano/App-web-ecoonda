@@ -22,10 +22,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
 import { Menu, ShoppingCart, User, Heart, LogOut } from 'lucide-react';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const mainNavLinks = [
-  { href: '/shop', label: 'Loja' },
+  { href: '/products', label: 'Loja' },
   { href: '/recommendations', label: 'Para Você' },
   { href: '/about', label: 'Sobre' },
   { href: '/sustainability', label: 'Sustentabilidade' },
@@ -75,20 +75,6 @@ export function Header() {
           </Link>
         );
       })}
-        {user && (
-          <Link
-            key="/account"
-            href="/account"
-            onClick={() => isMobile && setIsMobileMenuOpen(false)}
-            className={cn(
-              'text-sm font-medium transition-colors hover:text-accent wave-hover',
-              pathname.startsWith('/account') || pathname.startsWith('/dashboard') ? 'text-accent' : 'text-foreground/80',
-              isMobile && 'block px-4 py-2 text-base'
-            )}
-          >
-            Minha Conta
-          </Link>
-        )}
     </>
   );
 
@@ -113,9 +99,6 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/account">Perfil</Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem asChild>
-              <Link href="/dashboard/impact">Meu Impacto</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
