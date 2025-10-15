@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
-import { Menu, ShoppingCart, User, Heart, LogOut } from 'lucide-react';
+import { Menu, ShoppingCart, User, Heart, LogOut, Award } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const mainNavLinks = [
@@ -99,6 +99,12 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/account">Perfil</Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href="/rewards">
+                <Award className="mr-2 h-4 w-4" />
+                <span>Recompensas</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
