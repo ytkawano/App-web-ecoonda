@@ -10,7 +10,6 @@ import { db } from '@/lib/firebase';
 import { Product } from '@/lib/types';
 import ProductCard from '@/components/products/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import FirestoreSeeder from '@/components/FirestoreSeeder';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -36,7 +35,6 @@ export default function Home() {
 
   return (
     <div className="bg-background text-foreground">
-       <FirestoreSeeder />
       {/* Hero Section */}
       <section className="relative h-[70vh] w-full text-center text-white">
         <Image
