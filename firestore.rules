@@ -1,23 +1,24 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a user-ownership model for user profiles,
- *              allows public read access to products and challenges, and restricts
- *              order access to the owning user.
+ * @fileoverview Firestore Security Rules for the Greenin' application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles
+ * and a public-read, owner-write model for products and challenges.
+ * Orders are restricted to owner create and read, with no update or delete.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profile documents.
- * - /products/{productId}: Stores product details.
- * - /orders/{orderId}: Stores order information, linked to a specific user.
- * - /challenges/{challengeId}: Stores challenge information.
+ * - /users/{userId}: Stores individual user profile data, accessible only by the user themselves.
+ * - /products/{productId}: Stores product information, publicly readable, but only writable by an owner (not implemented in this version due to missing owner field).
+ * - /orders/{orderId}: Stores order information. Accessible only to the user who created the order.
+ * - /challenges/{challengeId}: Stores challenge information, publicly readable.
  *
  * Key Security Decisions:
- * - User profiles are private and accessible only to the owning user.
- * - Product and Challenge data are publicly readable but only writable by admins (not implemented in this version).
- * - Orders are only accessible by the user who created them.
  * - User listing is disallowed for privacy.
+ * - Public data (products, challenges) are stored in top-level collections for efficient public reads.
+ * - Flexible data validation is enabled for rapid prototyping.
  *
  * Denormalization for Authorization:
- * - Orders contain a `userId` field, denormalizing the user-order relationship for efficient rule evaluation.
+ *  - User profiles are stored under /users/{userId} to directly enforce ownership using the userId.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -26,82 +27,69 @@ service cloud.firestore {
     /**
      * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (create) User with UID 'user_abc' can create their profile if request.auth.uid == 'user_abc'.
-     * @allow (get, update, delete) User with UID 'user_abc' can read, update, or delete their profile if request.auth.uid == 'user_abc'.
-     * @deny (create) User with UID 'user_xyz' cannot create a profile with ID 'user_abc'.
-     * @deny (get, update, delete) User with UID 'user_xyz' cannot read, update, or delete the profile of user 'user_abc'.
-     * @principle Enforces document ownership for all operations on user profiles.
+     * @allow (create) Authenticated user can create their own profile.
+     * @allow (get, list, update, delete) Authenticated user can only access their own profile.
+     * @deny (create) Unauthenticated users cannot create profiles.
+     * @deny (get, list, update, delete) Unauthenticated users cannot access any profile.
+     * @deny (get, list, update, delete) Authenticated users cannot access other user profiles.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
 
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data != null;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false; // User listing is not permitted.
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow get, list: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Controls access to product documents. Products are publicly readable.
+     * @description Controls access to product documents. Products are publicly readable but writable only by the owner (not yet implemented due to missing owner field).
      * @path /products/{productId}
-     * @allow (get, list) Any user can read product details.
-     * @deny (create, update, delete) No user can create, update, or delete products (admin-only, not yet implemented).
-     * @principle Allows public read access to product information.
+     * @allow (get, list) Anyone can read product details.
+     * @deny (create, update, delete) Only the owner (not yet defined) should be able to modify products.
+     * @principle Products are publicly readable; owner-only writes are intended but not yet implemented.
      */
     match /products/{productId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add admin role check
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Controls access to order documents. Orders are only accessible by the user who created them.
+     * @description Controls access to order documents. Only the user who created the order can read it. No updates or deletes are allowed.
      * @path /orders/{orderId}
-     * @allow (create) User with UID 'user_abc' can create an order with userId 'user_abc'.
-     * @allow (get, update, delete) User with UID 'user_abc' can read, update, or delete order with userId 'user_abc'.
-     * @deny (create) User with UID 'user_xyz' cannot create an order with userId 'user_abc'.
-     * @deny (get, update, delete) User with UID 'user_xyz' cannot read, update, or delete the order of user 'user_abc'.
-     * @principle Enforces document ownership for all operations on orders.
+     * @allow (create) Authenticated user can create an order with their userId.
+     * @allow (get, list) Authenticated user can only read their own orders.
+     * @deny (update, delete) Orders cannot be updated or deleted.
+     * @deny (get, list) Authenticated users cannot access other user orders.
+     * @deny (create) Unauthenticated users cannot create orders.
+     * @principle Orders are user-owned and immutable after creation.
      */
     match /orders/{orderId} {
       function isSignedIn() {
         return request.auth != null;
       }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner() {
-        return isSignedIn() && resource.data.userId == request.auth.uid;
-      }
-
-      allow get: if isExistingOwner();
-      allow list: if false; // Listing not permitted for privacy.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner();
-      allow delete: if isExistingOwner();
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
-
-       /**
-        * @description Controls access to challenge documents. Challenges are publicly readable.
-        * @path /challenges/{challengeId}
-        * @allow (get, list) Any user can read challenge details.
-        * @deny (create, update, delete) No user can create, update, or delete challenges (admin-only, not yet implemented).
-        */
+    
+    /**
+     * @description Controls access to challenge documents. Challenges are publicly readable.
+     * @path /challenges/{challengeId}
+     * @allow (get, list) Anyone can read challenge details.
+     * @deny (create, update, delete) No one can create, update, or delete challenges in this prototype.
+     * @principle Challenges are publicly readable, and write access is not granted.
+     */
     match /challenges/{challengeId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add admin role check
+        allow get, list: if true;
+        allow create, update, delete: if false;
     }
   }
 }
