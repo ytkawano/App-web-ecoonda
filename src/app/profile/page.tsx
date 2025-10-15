@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { updateProfile } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import type { UserProfile } from '@/lib/types';
+
+
+// Helper function to update user profile with error handling
+function updateUserProfile(db: Firestore, userId: string, data: Partial<UserProfile>) {
+  const docRef = doc(db, 'users', userId);
+
+  setDoc(docRef, data, { merge: true })
+    .catch(async (serverError) => {
+      const permissionError = new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'update',
+        requestResourceData: data,
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+    });
+}
+
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -43,9 +63,14 @@ export default function ProfilePage() {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
           if (docSnap.exists()) {
-              const userData = docSnap.data();
+              const userData = docSnap.data() as UserProfile;
               if (userData.address && typeof userData.address === 'object') {
-                setAddress(userData.address);
+                setAddress({
+                    street: userData.address.street || '',
+                    number: userData.address.number || '',
+                    city: userData.address.city || '',
+                    state: userData.address.state || '',
+                });
               }
           }
       };
@@ -87,14 +112,15 @@ export default function ProfilePage() {
           photoURL: newPhotoURL 
       });
 
-      const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { 
+      const userProfileData: Partial<UserProfile> = {
           uid: user.uid,
-          email: user.email,
+          email: user.email!,
           displayName: displayName,
           photoURL: newPhotoURL,
-          address 
-      }, { merge: true });
+          address: address
+      };
+
+      updateUserProfile(db, user.uid, userProfileData);
 
       toast({
         title: 'Perfil Atualizado!',
@@ -165,19 +191,19 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="street">Rua</Label>
-                <Input name="street" id="street" value={address.street} onChange={handleAddressChange} placeholder="Ex: Av. Paulista" required />
+                <Input name="street" id="street" value={address.street} onChange={handleAddressChange} placeholder="Ex: Av. Paulista" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="number">Número</Label>
-                <Input name="number" id="number" value={address.number} onChange={handleAddressChange} placeholder="Ex: 1000" required />
+                <Input name="number" id="number" value={address.number} onChange={handleAddressChange} placeholder="Ex: 1000" />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="city">Cidade</Label>
-                <Input name="city" id="city" value={address.city} onChange={handleAddressChange} placeholder="Ex: São Paulo" required />
+                <Input name="city" id="city" value={address.city} onChange={handleAddressChange} placeholder="Ex: São Paulo" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="state">Estado</Label>
-                <Input name="state" id="state" value={address.state} onChange={handleAddressChange} placeholder="Ex: SP" required />
+                <Input name="state" id="state" value={address.state} onChange={handleAddressChange} placeholder="Ex: SP" />
               </div>
             </div>
 
