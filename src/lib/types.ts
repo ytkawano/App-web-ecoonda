@@ -26,11 +26,23 @@ export type Challenge = {
     progress: number;
 };
 
-export type UserImpact = {
+export type UserProfile = {
+    uid: string;
+    email: string;
+    displayName?: string;
+    photoURL?: string;
+    address: {
+        street: string;
+        number: string;
+        city: string;
+        state: string;
+    };
+    ecoPoints: number;
     plasticSaved: number;
     co2Avoided: number;
-    pointsEarned: number;
     returnsMade: number;
+    earnedBadges: string[];
+    purchaseHistory: string[];
 };
 
 export type ImpactBadge = {
@@ -62,7 +74,7 @@ export type Order = {
     items: OrderItem[];
 };
 
-export type OrderItem = { 
+export type OrderItem = {
     id: string;
     name: string;
     quantity: number;

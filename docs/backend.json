@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "photoURL": { "type": "string", "format": "uri", "description": "URL of the user's profile picture." },
+        "address": {
+          "type": "object",
+          "properties": {
+            "street": { "type": "string" },
+            "number": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" }
+          }
+        },
+        "ecoPoints": { "type": "number", "description": "Total EcoPoints earned by the user." },
+        "plasticSaved": { "type": "number", "description": "Grams of plastic saved." },
+        "co2Avoided": { "type": "number", "description": "Kilograms of CO2 emissions avoided." },
+        "returnsMade": { "type": "number", "description": "Number of packaging returns made." },
+        "earnedBadges": { "type": "array", "items": { "type": "string" } },
+        "purchaseHistory": { "type": "array", "items": { "type": "string" }, "description": "Array of product IDs." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Represents a product in the store.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["Cuidado Facial", "Corpo e Pele", "Cuidado Capilar"] },
+        "price": { "type": "number" },
+        "imageId": { "type": "string" },
+        "description": { "type": "string" },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "environmentalImpact": { "type": "string" }
+            }
+          }
+        },
+        "sustainabilityAttributes": { "type": "array", "items": { "type": "string" } },
+        "suitableSkinTypes": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "category", "price", "description"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents a customer order.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Em Processamento", "Enviado", "Entregue"] },
+        "total": { "type": "number" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "quantity": { "type": "number" },
+              "price": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["userId", "createdAt", "status", "total", "items"]
+    },
+    "Challenge": {
+        "title": "Challenge",
+        "description": "Represents a user challenge.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "points": { "type": "number" },
+            "badge": { "type": "string" }
+        }
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores public user profile information."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Stores details about individual products."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Stores customer order information."
+    },
+    "/challenges/{challengeId}": {
+        "schema": { "$ref": "#/entities/Challenge" },
+        "description": "Stores available challenges for users."
+    }
+  }
+}

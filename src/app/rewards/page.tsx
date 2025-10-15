@@ -1,41 +1,118 @@
 'use client';
 
-import { userImpact, rewards, pointHistory } from '@/lib/data';
-import { useCart } from '@/context/CartContext';
-import { Ticket, History, Leaf } from 'lucide-react';
+import { Ticket, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, updateDoc, increment, arrayUnion, writeBatch } from 'firebase/firestore';
+import type { UserProfile, Reward } from '@/lib/types';
+import { rewards } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/context/CartContext';
+
 
 export default function RewardsPage() {
-  // TODO: Replace with real user points from Firestore
-  const [userPoints, setUserPoints] = useState(userImpact.pointsEarned);
+  const { user, loading: authLoading } = useAuth();
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const { applyCoupon } = useCart();
   const { toast } = useToast();
 
-  const handleRedeem = (pointsRequired: number, title: string) => {
-    if (userPoints >= pointsRequired) {
-      setUserPoints(prevPoints => prevPoints - pointsRequired);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          setUserData(docSnap.data() as UserProfile);
+        }
+      }
+      setLoading(false);
+    };
+    if (!authLoading) {
+      fetchUserData();
+    }
+  }, [user, authLoading]);
 
-      const discountValue = parseInt(title.replace(/[^0-9]/g, ''), 10);
-      const couponCode = `${title.split(" ")[0].toUpperCase()}${discountValue}`;
-
-      applyCoupon({ code: couponCode, discount: discountValue });
-
-      toast({
-        title: "Recompensa Resgatada!",
-        description: `O cupom ${couponCode} foi aplicado ao seu carrinho.`,
-      });
-    } else {
+  const handleRedeem = async (reward: Reward) => {
+    if (!user || !userData) return;
+    if (userData.ecoPoints < reward.pointsRequired) {
       toast({
         variant: "destructive",
         title: "Pontos Insuficientes",
         description: "Você não tem pontos suficientes para resgatar esta recompensa.",
       });
+      return;
+    }
+
+    try {
+        const userDocRef = doc(db, 'users', user.uid);
+        
+        // Use a batch write to ensure atomic operation
+        const batch = writeBatch(db);
+        
+        // Decrement points
+        batch.update(userDocRef, { ecoPoints: increment(-reward.pointsRequired) });
+
+        // Add to point history (optional, can be a subcollection)
+        // For simplicity, we are not implementing a full point history here
+
+        await batch.commit();
+
+        setUserData(prev => prev ? { ...prev, ecoPoints: prev.ecoPoints - reward.pointsRequired } : null);
+
+        const discountValue = parseInt(reward.title.replace(/[^0-9]/g, ''), 10);
+        const couponCode = `${reward.title.split(" ")[0].toUpperCase()}${discountValue}`;
+        
+        applyCoupon({ code: couponCode, discount: discountValue });
+
+        toast({
+            title: "Recompensa Resgatada!",
+            description: `O cupom ${couponCode} foi aplicado ao seu carrinho.`,
+        });
+
+    } catch (error) {
+        console.error("Error redeeming reward:", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Resgatar",
+            description: "Não foi possível resgatar sua recompensa. Tente novamente.",
+        });
     }
   };
+
+  const userPoints = userData?.ecoPoints || 0;
+
+  if (loading || authLoading) {
+      return (
+          <div className="container mx-auto max-w-7xl px-4 py-12">
+            <header className="mb-12">
+                <Skeleton className="h-10 w-3/4 mb-2" />
+                <Skeleton className="h-6 w-full" />
+            </header>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({length: 6}).map((_, i) => (
+                    <Card key={i}>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-3/4" />
+                            <Skeleton className="h-4 w-full mt-2" />
+                        </CardHeader>
+                        <CardFooter>
+                            <Skeleton className="h-10 w-full" />
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
+      )
+  }
+
+  if (!user) {
+      return <div className='container mx-auto py-12 text-center'>Faça login para ver suas recompensas.</div>
+  }
 
   return (
     <div className="bg-background min-h-screen text-foreground">
@@ -60,67 +137,34 @@ export default function RewardsPage() {
             </div>
         </header>
 
-        <Tabs defaultValue="rewards">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="rewards">Resgatar Recompensas</TabsTrigger>
-            <TabsTrigger value="history">Histórico de Pontos</TabsTrigger>
-          </TabsList>
-
-          {/* Aba de Recompensas */}
-          <TabsContent value="rewards">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rewards.map((reward) => {
-                const canRedeem = userPoints >= reward.pointsRequired;
-                return (
-                  <Card key={reward.id} className={`flex flex-col justify-between transition-all ${!canRedeem ? 'bg-muted/50' : 'bg-card'}`}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl">{reward.title}</CardTitle>
-                        <div className="flex items-center gap-2 font-bold text-primary">
-                           <Ticket className="h-5 w-5" /> 
-                           <span>{reward.pointsRequired}</span>
-                        </div>
-                      </div>
-                      <CardDescription>{reward.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button 
-                        disabled={!canRedeem} 
-                        className="w-full"
-                        onClick={() => handleRedeem(reward.pointsRequired, reward.title)}
-                      >
-                        {canRedeem ? 'Resgatar Agora' : 'Pontos Insuficientes'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          {/* Aba de Histórico */}
-          <TabsContent value="history">
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Atividades</CardTitle>
-                <CardDescription>Veja como você ganhou seus pontos.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-4">
-                  {pointHistory.map((activity) => (
-                    <li key={activity.id} className="flex items-center justify-between pb-4 border-b last:border-0">
-                      <div>
-                        <p className="font-medium">{activity.description}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(activity.date).toLocaleDateString('pt-BR')}</p>
-                      </div>
-                      <span className="font-bold text-green-500">+{activity.points} pts</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rewards.map((reward) => {
+            const canRedeem = userPoints >= reward.pointsRequired;
+            return (
+              <Card key={reward.id} className={`flex flex-col justify-between transition-all ${!canRedeem ? 'bg-muted/50' : 'bg-card'}`}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{reward.title}</CardTitle>
+                    <div className="flex items-center gap-2 font-bold text-primary">
+                       <Ticket className="h-5 w-5" />
+                       <span>{reward.pointsRequired}</span>
+                    </div>
+                  </div>
+                  <CardDescription>{reward.description}</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    disabled={!canRedeem}
+                    className="w-full"
+                    onClick={() => handleRedeem(reward)}
+                  >
+                    {canRedeem ? 'Resgatar Agora' : 'Pontos Insuficientes'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
 
       </div>
     </div>

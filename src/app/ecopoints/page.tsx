@@ -1,6 +1,5 @@
 'use client';
 
-import { userImpact, challenges, impactBadges } from '@/lib/data';
 import {
   Leaf,
   Sprout,
@@ -13,9 +12,15 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { UserProfile, Challenge } from '@/lib/types';
+import { challenges as allChallenges, impactBadges } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mapeamento de Ícones
+
 const iconComponents: { [key: string]: React.ElementType } = {
   Sprout,
   Shield,
@@ -40,8 +45,69 @@ const ImpactStat = ({ value, label, icon: Icon }: { value: string | number, labe
 
 
 export default function EcoPointsPage() {
-  // Simulação: o usuário ganhou os 4 primeiros emblemas
-  const earnedBadges = impactBadges.slice(0, 4);
+  const { user, loading: authLoading } = useAuth();
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data() as UserProfile;
+          setUserData(data);
+          
+          const challengesWithProgress = allChallenges.map(challenge => {
+              if (data.earnedBadges?.includes(challenge.badge)) {
+                  return { ...challenge, progress: 100 };
+              }
+              // In a real app, you'd fetch real progress. Here we simulate it.
+              return challenge;
+          });
+          setUserChallenges(challengesWithProgress);
+        }
+      }
+      setLoading(false);
+    };
+    if (!authLoading) {
+      fetchUserData();
+    }
+  }, [user, authLoading]);
+
+  const earnedBadges = impactBadges.filter(b => userData?.earnedBadges.includes(b.name));
+
+  if (loading || authLoading) {
+    return (
+        <div className="container mx-auto max-w-7xl px-4 py-12">
+            <header className="mb-12 flex flex-col items-center justify-between gap-6 sm:flex-row">
+                 <div className="flex-1 space-y-2">
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-6 w-full" />
+                </div>
+                 <Skeleton className="h-20 w-48 rounded-full" />
+            </header>
+            <Skeleton className="h-10 w-full mb-8" />
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
+  
+  if (!userData) {
+      return <div className='container mx-auto text-center py-12'>Faça login para ver seus EcoPoints.</div>
+  }
 
   return (
     <div className="bg-background min-h-screen text-foreground">
@@ -59,7 +125,7 @@ export default function EcoPointsPage() {
           <div className="flex items-center gap-4 rounded-full bg-card p-4 shadow-md">
             <Leaf className="h-10 w-10 text-green-500" />
             <div className="text-right">
-              <span className="block text-3xl font-bold text-primary">{userImpact.pointsEarned}</span>
+              <span className="block text-3xl font-bold text-primary">{userData.ecoPoints}</span>
               <span className="text-sm text-muted-foreground">EcoPoints</span>
             </div>
           </div>
@@ -82,10 +148,10 @@ export default function EcoPointsPage() {
                   <CardDescription>Pequenas ações, grande diferença.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                    <ImpactStat value={`${userImpact.plasticSaved / 1000}kg`} label="Plástico Economizado" icon={Shield} />
-                    <ImpactStat value={`${userImpact.co2Avoided}kg`} label="CO₂ Evitado" icon={Sprout} />
-                    <ImpactStat value={userImpact.returnsMade} label="Devoluções Feitas" icon={Recycle} />
-                    <ImpactStat value={userImpact.pointsEarned} label="Total de Pontos" icon={Leaf} />
+                    <ImpactStat value={`${userData.plasticSaved / 1000}kg`} label="Plástico Economizado" icon={Shield} />
+                    <ImpactStat value={`${userData.co2Avoided}kg`} label="CO₂ Evitado" icon={Sprout} />
+                    <ImpactStat value={userData.returnsMade} label="Devoluções Feitas" icon={Recycle} />
+                    <ImpactStat value={userData.ecoPoints} label="Total de Pontos" icon={Leaf} />
                 </CardContent>
               </Card>
 
@@ -96,7 +162,7 @@ export default function EcoPointsPage() {
                     <CardTitle>Desafios em Andamento</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                    {challenges.slice(0, 2).map((challenge) => (
+                    {userChallenges.slice(0, 2).map((challenge) => (
                         <div key={challenge.id}>
                             <div className="mb-2 flex items-baseline justify-between">
                                 <h4 className="font-semibold">{challenge.title}</h4>
@@ -115,7 +181,7 @@ export default function EcoPointsPage() {
                     <CardTitle>Últimos Emblemas Conquistados</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap items-center justify-center gap-6">
-                        {earnedBadges.map((badge) => {
+                        {earnedBadges.slice(0, 4).map((badge) => {
                             const Icon = iconComponents[badge.icon];
                             return (
                                 <div key={badge.name} className="flex flex-col items-center gap-2 text-center">
@@ -126,6 +192,7 @@ export default function EcoPointsPage() {
                                 </div>
                             );
                         })}
+                         {earnedBadges.length === 0 && <p className='text-muted-foreground'>Você ainda não ganhou nenhum emblema.</p>}
                     </CardContent>
                 </Card>
               </div>
@@ -140,7 +207,7 @@ export default function EcoPointsPage() {
                 <CardDescription>Complete para ganhar pontos e emblemas exclusivos.</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {challenges.map((challenge) => (
+                {userChallenges.map((challenge) => (
                   <Card key={challenge.id} className="flex flex-col">
                     <CardHeader>
                       <CardTitle className="text-lg">{challenge.title}</CardTitle>

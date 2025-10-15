@@ -2,17 +2,45 @@
 'use client';
 
 import { useWishlist } from '@/context/WishlistContext';
-import { products } from '@/lib/products';
 import ProductCard from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Product } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WishlistPage() {
   const { wishlist } = useWishlist();
-  const wishlistedProducts = products.filter((product) =>
-    wishlist.includes(product.id)
-  );
+  const [wishlistedProducts, setWishlistedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWishlistedProducts = async () => {
+      setLoading(true);
+      if (wishlist.length === 0) {
+        setWishlistedProducts([]);
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const productsQuery = query(collection(db, 'products'), where('__name__', 'in', wishlist));
+        const querySnapshot = await getDocs(productsQuery);
+        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+        setWishlistedProducts(products);
+      } catch (error) {
+        console.error("Error fetching wishlisted products: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWishlistedProducts();
+  }, [wishlist]);
+
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -25,7 +53,19 @@ export default function WishlistPage() {
         </p>
       </div>
 
-      {wishlistedProducts.length > 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-[250px] w-full rounded-xl" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </div>
+            </div>
+            ))}
+        </div>
+      ) : wishlistedProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {wishlistedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />

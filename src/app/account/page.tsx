@@ -1,12 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { userImpact, orders, wishlist, impactBadges } from '@/lib/data';
 import {
   User,
   ChevronRight,
   Leaf,
-  Gift,
   Package,
   Heart,
   Award,
@@ -23,7 +21,9 @@ import OrderHistory from '@/components/dashboard/OrderHistory';
 import { useAuth } from '@/context/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-
+import { impactBadges, wishlist as mockWishlist } from '@/lib/data';
+import { UserProfile } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const iconComponents: { [key: string]: React.ElementType } = {
     Sprout,
@@ -58,10 +58,11 @@ const AccountSection = ({ icon: Icon, title, description, link, linkText, childr
   );
 
 export default function AccountPage() {
-    const { user, loading } = useAuth();
-    const [address, setAddress] = useState('Não informado');
-    const userPoints = userImpact.pointsEarned;
-    const earnedBadges = impactBadges.slice(0, 4);
+    const { user, loading: authLoading } = useAuth();
+    const [userData, setUserData] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+    // TODO: Replace with real wishlist data
+    const wishlist = mockWishlist;
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -69,30 +70,59 @@ export default function AccountPage() {
                 const userDocRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    if (userData.address) {
-                        if (typeof userData.address === 'object') {
-                            const { street, number, city, state } = userData.address;
-                            setAddress([street, number, city, state].filter(Boolean).join(', '));
-                        } else {
-                             setAddress(userData.address || 'Não informado');
-                        }
-                    } else {
-                        setAddress('Não informado')
-                    }
+                    setUserData(docSnap.data() as UserProfile);
+                } else {
+                    // Create a default profile if it doesn't exist
+                    const defaultProfile: UserProfile = {
+                        uid: user.uid,
+                        email: user.email!,
+                        displayName: user.displayName || 'Usuário',
+                        photoURL: user.photoURL || '',
+                        address: { street: '', number: '', city: '', state: '' },
+                        ecoPoints: 0,
+                        plasticSaved: 0,
+                        co2Avoided: 0,
+                        returnsMade: 0,
+                        earnedBadges: [],
+                        purchaseHistory: [],
+                    };
+                    setUserData(defaultProfile);
                 }
             }
+            setLoading(false);
         };
-        fetchUserData();
-    }, [user]);
+        if (!authLoading) {
+            fetchUserData();
+        }
+    }, [user, authLoading]);
 
-    if (loading) {
-        return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    if (authLoading || loading) {
+        return (
+             <div className="container mx-auto max-w-7xl px-4 py-12">
+                 <header className="mb-12 text-center">
+                    <Skeleton className="w-24 h-24 rounded-full mx-auto mb-4" />
+                    <Skeleton className="h-10 w-1/2 mx-auto" />
+                    <Skeleton className="h-6 w-3/4 mx-auto mt-2" />
+                </header>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {Array.from({length: 4}).map((_, i) => (
+                        <Card key={i}>
+                            <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
+                            <CardContent><Skeleton className="h-24 w-full" /></CardContent>
+                            <CardFooter><Skeleton className="h-10 w-32" /></CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        )
     }
 
-    if (!user) {
+    if (!user || !userData) {
         return <div className="flex h-screen items-center justify-center">Por favor, faça login para ver sua conta.</div>;
     }
+
+    const addressString = [userData.address?.street, userData.address?.number, userData.address?.city, userData.address?.state].filter(Boolean).join(', ') || 'Não informado';
+    const earnedBadges = impactBadges.filter(b => userData.earnedBadges.includes(b.name));
 
 
   return (
@@ -102,9 +132,9 @@ export default function AccountPage() {
         {/* Cabeçalho */}
         <header className="mb-12 text-center">
             <div className="inline-block bg-card p-4 rounded-full mb-4">
-                <img 
+                <img
                     src={user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
-                    alt="Foto do Perfil" 
+                    alt="Foto do Perfil"
                     className="w-24 h-24 rounded-full border-4 border-primary"
                 />
             </div>
@@ -117,12 +147,12 @@ export default function AccountPage() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
+
             {/* Seção de EcoPoints */}
-            <AccountSection 
-                icon={Leaf} 
-                title="EcoPoints & Emblemas" 
-                description={`Você tem ${userPoints} pontos para usar.`}
+            <AccountSection
+                icon={Leaf}
+                title="EcoPoints & Emblemas"
+                description={`Você tem ${userData.ecoPoints} pontos para usar.`}
                 link="/ecopoints"
                 linkText='Ver todos emblemas'
             >
@@ -130,17 +160,17 @@ export default function AccountPage() {
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div className="flex flex-col items-center gap-1">
                             <Shield className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userImpact.plasticSaved / 1000} kg</span>
+                            <span className="font-bold text-lg">{userData.plasticSaved / 1000} kg</span>
                             <span className="text-xs text-muted-foreground">Plástico Evitado</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
                             <Recycle className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userImpact.returnsMade}</span>
+                            <span className="font-bold text-lg">{userData.returnsMade}</span>
                             <span className="text-xs text-muted-foreground">Devoluções</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
                             <Sprout className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userImpact.co2Avoided} kg</span>
+                            <span className="font-bold text-lg">{userData.co2Avoided} kg</span>
                             <span className="text-xs text-muted-foreground">CO₂ Evitado</span>
                         </div>
                     </div>
@@ -167,9 +197,9 @@ export default function AccountPage() {
             </div>
 
              {/* Seção de Lista de Desejos */}
-             <AccountSection 
-                icon={Heart} 
-                title="Lista de Desejos" 
+             <AccountSection
+                icon={Heart}
+                title="Lista de Desejos"
                 description="Seus produtos favoritos que você salvou."
                 link="/wishlist"
                 linkText='Ver lista de desejos'
@@ -179,7 +209,7 @@ export default function AccountPage() {
                         {wishlist.slice(0, 5).map(item => (
                             <img key={item.id} className="w-16 h-16 rounded-full border-2 border-white dark:border-gray-800 object-cover" src={item.imageUrl} alt={item.name}/>
                         ))}
-                        {wishlist.length > 5 && 
+                        {wishlist.length > 5 &&
                             <a className="flex items-center justify-center w-16 h-16 text-xs font-medium text-white bg-gray-700 rounded-full border-2 border-white hover:bg-gray-600 dark:border-gray-800" href="#">+{wishlist.length - 5}</a>
                         }
                     </div>
@@ -189,9 +219,9 @@ export default function AccountPage() {
             </AccountSection>
 
             {/* Seção de Perfil */}
-            <AccountSection 
-                icon={User} 
-                title="Meu Perfil" 
+            <AccountSection
+                icon={User}
+                title="Meu Perfil"
                 description="Gerencie seus dados e informações de contato."
                 link="/profile"
                 linkText='Editar perfil'
@@ -199,7 +229,7 @@ export default function AccountPage() {
                 <div className="space-y-3">
                     <p className="font-semibold">{user.displayName || 'Usuário'}</p>
                     <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <p className="text-sm text-muted-foreground">{address}</p>
+                    <p className="text-sm text-muted-foreground">{addressString}</p>
                 </div>
             </AccountSection>
         </div>

@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can read and write to their own profile.
+    // No one can read other users' profiles.
+    match /users/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if request.auth != null;
+    }
+
+    // Anyone can read products. Only admins should write (not implemented yet).
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false; // Protect product data
+    }
+    
+    // Users can create their own orders.
+    // Users can read their own orders.
+    // No one else can read or write orders.
+    match /orders/{orderId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if false;
+    }
+
+    // Challenges are public to read. Only admins should write.
+    match /challenges/{challengeId} {
+        allow read: if true;
+        allow write: if false;
+    }
+  }
+}
