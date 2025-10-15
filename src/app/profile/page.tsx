@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,14 +19,20 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [address, setAddress] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Salvando...');
+
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || '');
-      setPhotoURL(user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`);
+      const userPhoto = user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`;
+      setPhotoURL(userPhoto);
+      setImagePreview(userPhoto);
       
       const fetchUserData = async () => {
           const userDocRef = doc(db, 'users', user.uid);
@@ -38,17 +45,38 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setLoading(true);
+    let newPhotoURL = photoURL;
 
     try {
-      // Update Firebase Auth profile
-      await updateProfile(user, { displayName, photoURL });
+      // 1. Upload new image if there is one
+      if (imageFile) {
+        setLoadingMessage('Enviando imagem...');
+        const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
+        const uploadResult = await uploadBytes(storageRef, imageFile);
+        newPhotoURL = await getDownloadURL(uploadResult.ref);
+      }
 
-      // Update address in Firestore
+      // 2. Update Firebase Auth profile
+      setLoadingMessage('Atualizando perfil...');
+      await updateProfile(user, { 
+          displayName, 
+          photoURL: newPhotoURL 
+      });
+
+      // 3. Update address in Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { address }, { merge: true });
 
@@ -67,6 +95,7 @@ export default function ProfilePage() {
       });
     } finally {
       setLoading(false);
+      setLoadingMessage('Salvando...');
     }
   };
 
@@ -92,18 +121,18 @@ export default function ProfilePage() {
         <form onSubmit={handleProfileUpdate}>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
-                 <img
-                    src={photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
-                    alt="Foto do Perfil"
+                 {imagePreview && <img
+                    src={imagePreview}
+                    alt="Pré-visualização da foto de perfil"
                     className="h-32 w-32 rounded-full border-4 border-primary object-cover"
-                />
+                />}
                 <div className="w-full space-y-2">
-                    <Label htmlFor="photoURL">URL da Foto de Perfil</Label>
+                    <Label htmlFor="photoFile">Foto de Perfil</Label>
                     <Input
-                        id="photoURL"
-                        value={photoURL}
-                        onChange={(e) => setPhotoURL(e.target.value)}
-                        placeholder="https://exemplo.com/sua-foto.jpg"
+                        id="photoFile"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
                     />
                 </div>
             </div>
@@ -134,7 +163,7 @@ export default function ProfilePage() {
 
              <Button type="submit" disabled={loading} className="w-full">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {loading ? 'Salvando...' : 'Salvar Alterações'}
+              {loading ? loadingMessage : 'Salvar Alterações'}
             </Button>
           </CardContent>
         </form>
