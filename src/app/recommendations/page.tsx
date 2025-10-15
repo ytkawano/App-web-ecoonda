@@ -1,7 +1,6 @@
 'use client';
 
 import RecommendationEngine from "@/components/recommendations/RecommendationEngine";
-import { userPreferences } from "@/lib/data";
 import { Product } from "@/lib/types";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -11,6 +10,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function RecommendationsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Define initial preferences locally to fix the import error
+  const userPreferences = {
+    skinType: 'normal',
+    sustainabilityPreferences: ['vegan', 'cruelty-free'],
+    purchaseHistory: [],
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
