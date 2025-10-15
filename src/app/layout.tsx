@@ -5,9 +5,10 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/CartContext";
-import { AuthProvider } from "@/context/AuthContext";
-import { WishlistProvider } from "@/context/WishlistContext"; // Importação adicionada
+import { WishlistProvider } from "@/context/WishlistContext";
 import SplashScreen from "@/components/layout/SplashScreen";
+import { initializeFirebase } from "@/firebase";
+import FirebaseClientProvider from "@/firebase/client-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
@@ -22,12 +23,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const firebase = initializeFirebase();
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} ${unbounded.variable} font-sans`}>
-        <AuthProvider>
+        <FirebaseClientProvider value={firebase}>
           <CartProvider>
-            <WishlistProvider> {/* Provedor adicionado */}
+            <WishlistProvider>
               <SplashScreen />
               <Header />
               <main>{children}</main>
@@ -35,7 +37,7 @@ export default function RootLayout({
               <Toaster />
             </WishlistProvider>
           </CartProvider>
-        </AuthProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

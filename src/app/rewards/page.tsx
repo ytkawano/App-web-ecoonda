@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/firebase';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, increment, arrayUnion, writeBatch } from 'firebase/firestore';
 import type { UserProfile, Reward } from '@/lib/types';

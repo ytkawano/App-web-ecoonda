@@ -13,9 +13,9 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { db } from '@/lib/firebase';
+import { useAuth } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import type { UserProfile, Challenge } from '@/lib/types';
 import { challenges as allChallenges, impactBadges } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -76,7 +76,7 @@ export default function EcoPointsPage() {
     }
   }, [user, authLoading]);
 
-  const earnedBadges = impactBadges.filter(b => userData?.earnedBadges.includes(b.name));
+  const earnedBadges = impactBadges.filter(b => userData?.earnedBadges?.includes(b.name));
 
   if (loading || authLoading) {
     return (
@@ -105,7 +105,7 @@ export default function EcoPointsPage() {
     )
   }
   
-  if (!userData) {
+  if (!user || !userData) {
       return <div className='container mx-auto text-center py-12'>Faça login para ver seus EcoPoints.</div>
   }
 

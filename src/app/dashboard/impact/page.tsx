@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import ImpactTracker from '@/components/dashboard/ImpactTracker';
 import { impactBadges as allImpactBadges } from '@/lib/data';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/firebase';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';

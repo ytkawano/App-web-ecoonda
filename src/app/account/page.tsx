@@ -18,9 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import React, { useEffect, useState } from 'react';
 import OrderHistory from '@/components/dashboard/OrderHistory';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { impactBadges, wishlist as mockWishlist } from '@/lib/data';
 import { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -59,6 +58,7 @@ const AccountSection = ({ icon: Icon, title, description, link, linkText, childr
 
 export default function AccountPage() {
     const { user, loading: authLoading } = useAuth();
+    const firestore = useFirestore();
     const [userData, setUserData] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     // TODO: Replace with real wishlist data
@@ -66,8 +66,8 @@ export default function AccountPage() {
 
     useEffect(() => {
         const fetchUserData = async () => {
-            if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
+            if (user && firestore) {
+                const userDocRef = doc(firestore, 'users', user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
                     setUserData(docSnap.data() as UserProfile);
@@ -94,7 +94,7 @@ export default function AccountPage() {
         if (!authLoading) {
             fetchUserData();
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, firestore]);
 
     if (authLoading || loading) {
         return (

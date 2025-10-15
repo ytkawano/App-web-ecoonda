@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Lock } from 'lucide-react';
 import Image from 'next/image';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/firebase';
 import { useEffect } from 'react';
 import { placeholderImages } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';

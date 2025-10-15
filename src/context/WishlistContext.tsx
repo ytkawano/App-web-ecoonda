@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/firebase';
 import { useToast } from "@/components/ui/use-toast"
 
 interface WishlistContextType {
@@ -14,20 +14,20 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const auth = useAuth();
   const [wishlist, setWishlist] = useState<string[]>([]);
   const { toast } = useToast()
 
 
   useEffect(() => {
-    if (user) {
+    if (auth?.currentUser) {
       // Here you can load the user's wishlist from a database
       // and set the wishlist state.
     }
-  }, [user]);
+  }, [auth]);
 
   const addToWishlist = (productId: string) => {
-    if (!user) {
+    if (!auth?.currentUser) {
         toast({ title: "Faça login para adicionar à sua lista de desejos." });
         return;
     }

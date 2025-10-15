@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import EcoChallenges from "@/components/dashboard/EcoChallenges";
 import { challenges as allChallenges } from "@/lib/data";
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/firebase';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile, Challenge } from '@/lib/types';
