@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { db } from '@/lib/firebase';
 import { products } from '@/lib/products';
-import { collection, writeBatch } from 'firebase/firestore';
+import { collection, writeBatch, doc } from 'firebase/firestore';
 import { useState } from 'react';
 
 export default function FirestoreSeeder() {
@@ -19,11 +19,12 @@ export default function FirestoreSeeder() {
     });
 
     try {
-      const productsCollection = collection(db, 'products');
+      const productsCollectionRef = collection(db, 'products');
       const batch = writeBatch(db);
 
       products.forEach(product => {
-        const docRef = product.id ? collection(db, 'products', product.id) : collection(db, 'products').doc();
+        // Use doc() to create a reference to a document with a specific ID
+        const docRef = doc(productsCollectionRef, product.id);
         batch.set(docRef, product);
       });
 
