@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -5,7 +6,6 @@ import {
   User,
   ChevronRight,
   Leaf,
-  Package,
   Heart,
   Award,
   Shield,
@@ -15,7 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import React, { useEffect, useState } from 'react';
 import OrderHistory from '@/components/dashboard/OrderHistory';
 import { useAuth } from '@/context/AuthContext';
@@ -238,3 +238,5 @@ export default function AccountPage() {
     </div>
   );
 }
+
+    
