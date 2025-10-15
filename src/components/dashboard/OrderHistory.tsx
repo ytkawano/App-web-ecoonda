@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, Timestamp, Unsubscribe } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Order, OrderItem } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -16,40 +18,45 @@ export default function OrderHistory() {
   const firestore = useFirestore();
 
   useEffect(() => {
-    async function fetchOrders() {
-      if (authLoading) return;
-      if (!user || !firestore) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const ordersQuery = query(
-          collection(firestore, "orders"),
-          where("userId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-
-        const querySnapshot = await getDocs(ordersQuery);
-        const userOrders = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            // Convert Firestore Timestamp to JavaScript Date object
-            const createdAtDate = (data.createdAt as Timestamp)?.toDate ? (data.createdAt as Timestamp).toDate() : new Date();
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: createdAtDate,
-            } as Order;
-        });
-        setOrders(userOrders);
-      } catch (error) {
-          console.error("Error fetching orders: ", error);
-      } finally {
-        setLoading(false);
-      }
+    if (authLoading) return;
+    if (!user || !firestore) {
+      setLoading(false);
+      return;
     }
 
-    fetchOrders();
+    const ordersQuery = query(
+      collection(firestore, "orders"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe: Unsubscribe = onSnapshot(
+        ordersQuery,
+        (querySnapshot) => {
+            const userOrders = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                const createdAtDate = (data.createdAt as Timestamp)?.toDate ? (data.createdAt as Timestamp).toDate() : new Date();
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: createdAtDate,
+                } as Order;
+            });
+            setOrders(userOrders);
+            setLoading(false);
+        },
+        (error) => {
+            const permissionError = new FirestorePermissionError({
+                path: 'orders',
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            console.error("Error fetching orders: ", error);
+            setLoading(false);
+        }
+    );
+
+    return () => unsubscribe();
   }, [user, authLoading, firestore]);
 
   if (loading || authLoading) {
