@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/context/CartContext';
@@ -12,7 +13,7 @@ import { CreditCard, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
-import { placeholderImages } from '@/lib/placeholder-images.json';
+import { placeholderImages } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 
 const imageMap = placeholderImages.reduce((acc, img) => {

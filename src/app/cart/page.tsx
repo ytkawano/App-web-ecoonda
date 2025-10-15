@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/context/CartContext';
@@ -9,6 +10,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Trash2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { placeholderImages } from '@/lib/data';
+
+const imageMap = placeholderImages.reduce((acc, img) => {
+  acc[img.id] = img.imageUrl;
+  return acc;
+}, {} as Record<string, string>);
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, totalItems, totalPrice, subtotal, coupon, removeCoupon } = useCart();
@@ -30,11 +37,13 @@ export default function CartPage() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="space-y-6">
-              {cart.map((item) => (
+              {cart.map((item) => {
+                const imageUrl = imageMap[item.imageId] || '/placeholder.jpg';
+                return(
                 <div key={item.id} className="flex items-start gap-6">
                   <div className="relative h-24 w-24 overflow-hidden rounded-md">
                     <Image
-                      src={`https://picsum.photos/seed/${item.imageId.split('-')[1]}/200/200`}
+                      src={imageUrl}
                       alt={item.name}
                       fill
                       className="object-cover"
@@ -63,7 +72,7 @@ export default function CartPage() {
                     R${(item.price * item.quantity).toFixed(2).replace('.', ',')}
                   </p>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
 
