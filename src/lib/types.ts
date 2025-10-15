@@ -68,7 +68,7 @@ export type PointActivity = {
 export type Order = {
     id: string;
     userId: string;
-    createdAt: Date | Timestamp;
+    createdAt: any; // Can be a Date or a Firestore Timestamp
     status: 'Entregue' | 'Em Processamento' | 'Enviado';
     total: number;
     items: OrderItem[];

@@ -1,46 +1,58 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Order, OrderItem } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const firestore = useFirestore();
 
   useEffect(() => {
     async function fetchOrders() {
+      if (authLoading) return;
       if (!user || !firestore) {
         setLoading(false);
         return;
       }
 
-      const ordersQuery = query(
-        collection(firestore, "orders"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc")
-      );
+      try {
+        const ordersQuery = query(
+          collection(firestore, "orders"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc")
+        );
 
-      const querySnapshot = await getDocs(ordersQuery);
-      const userOrders = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt.toDate(), // Converte Timestamp para Date
-      })) as Order[];
-      setOrders(userOrders);
-      setLoading(false);
+        const querySnapshot = await getDocs(ordersQuery);
+        const userOrders = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Convert Firestore Timestamp to JavaScript Date object
+            const createdAtDate = (data.createdAt as Timestamp)?.toDate ? (data.createdAt as Timestamp).toDate() : new Date();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: createdAtDate,
+            } as Order;
+        });
+        setOrders(userOrders);
+      } catch (error) {
+          console.error("Error fetching orders: ", error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchOrders();
-  }, [user, firestore]);
+  }, [user, authLoading, firestore]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
         <Card>
             <CardHeader>
@@ -48,7 +60,10 @@ export default function OrderHistory() {
                 <CardDescription>Seus pedidos recentes.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p>Carregando histórico...</p>
+                <div className="space-y-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </div>
             </CardContent>
       </Card>
     )
@@ -71,7 +86,7 @@ export default function OrderHistory() {
                   <div className="mb-4 sm:mb-0">
                     <h3 className="font-semibold">Pedido #{order.id.substring(0, 7)}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {order.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      {new Date(order.createdAt as Date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
                   </div>
                   <Badge variant={order.status === 'Enviado' ? 'default' : 'secondary'}>{order.status}</Badge>
