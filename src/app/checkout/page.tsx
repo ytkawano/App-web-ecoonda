@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/context/CartContext';
@@ -13,10 +14,10 @@ import Image from 'next/image';
 import { useAuth, useFirestore } from '@/firebase';
 import { useEffect, useState } from 'react';
 import { placeholderImages } from '@/lib/data';
-import { collection, doc, writeBatch, serverTimestamp, increment, arrayUnion } from 'firebase/firestore';
+import { collection, doc, writeBatch, serverTimestamp, increment, arrayUnion, getDoc } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import type { Order } from '@/lib/types';
+import type { Order, UserProfile } from '@/lib/types';
 
 const imageMap = placeholderImages.reduce((acc, img) => {
   acc[img.id] = img.imageUrl;
@@ -52,15 +53,35 @@ export default function CheckoutPage() {
     return <div className="flex h-screen items-center justify-center">Seu carrinho está vazio. Redirecionando...</div>;
   }
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firestore || !user) return;
 
     setIsProcessing(true);
 
+    const userRef = doc(firestore, 'users', user.uid);
+    let userProfile: UserProfile | null = null;
+    
+    try {
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+            userProfile = userDoc.data() as UserProfile;
+        }
+    } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Erro no Checkout',
+            description: 'Não foi possível buscar seus dados de usuário. Tente novamente.',
+        });
+        setIsProcessing(false);
+        return;
+    }
+
+
     const batch = writeBatch(firestore);
 
-    // 1. Criar o novo pedido
+    // 1. Create the new order
     const orderRef = doc(collection(firestore, 'orders'));
     const orderData: Omit<Order, 'id' | 'createdAt'> & { createdAt: any } = {
         userId: user.uid,
@@ -76,23 +97,32 @@ export default function CheckoutPage() {
     };
     batch.set(orderRef, orderData);
 
-    // 2. Atualizar o perfil do usuário com EcoPoints e histórico de compras
-    const userRef = doc(firestore, 'users', user.uid);
+    // 2. Update user profile
     const pointsToAward = Math.round(totalPrice);
     const productIds = cart.map(item => item.id);
     
-    const userUpdateData = {
+    const userUpdateData: any = {
         ecoPoints: increment(pointsToAward),
         purchaseHistory: arrayUnion(...productIds)
     };
+
+    // Check if this is the first purchase and award the badge
+    if (userProfile && (!userProfile.purchaseHistory || userProfile.purchaseHistory.length === 0)) {
+        userUpdateData.earnedBadges = arrayUnion('Iniciante Eco');
+    }
+
     batch.update(userRef, userUpdateData);
 
     batch.commit()
       .then(() => {
         clearCart();
+        let toastDescription = `Seu pedido foi realizado e você ganhou ${pointsToAward} EcoPoints!`;
+        if (userProfile && (!userProfile.purchaseHistory || userProfile.purchaseHistory.length === 0)) {
+            toastDescription += " Você também ganhou o emblema 'Iniciante Eco'!"
+        }
         toast({
           title: 'Pagamento Aprovado!',
-          description: `Seu pedido foi realizado e você ganhou ${pointsToAward} EcoPoints!`,
+          description: toastDescription,
         });
         router.push('/orders');
       })
