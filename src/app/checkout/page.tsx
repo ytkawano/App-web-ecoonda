@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/context/CartContext';
@@ -11,10 +10,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Lock } from 'lucide-react';
 import Image from 'next/image';
-import { useAuth } from '@/firebase';
-import { useEffect } from 'react';
+import { useAuth, useFirestore } from '@/firebase';
+import { useEffect, useState } from 'react';
 import { placeholderImages } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import type { Order } from '@/lib/types';
 
 const imageMap = placeholderImages.reduce((acc, img) => {
   acc[img.id] = img.imageUrl;
@@ -26,6 +28,9 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
+  const [isProcessing, setIsProcessing] = useState(false);
+
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,15 +54,50 @@ export default function CheckoutPage() {
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Processing payment...');
+    if (!firestore || !user) return;
 
-    clearCart();
-    toast({
-      title: 'Pagamento Aprovado!',
-      description: 'Seu pedido foi realizado com sucesso. Obrigado por sua compra!',
-    });
+    setIsProcessing(true);
 
-    router.push('/');
+    const orderData: Omit<Order, 'id' | 'createdAt'> & { createdAt: any } = {
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        status: 'Em Processamento',
+        total: totalPrice,
+        items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price
+        })),
+    };
+
+    const ordersCollection = collection(firestore, 'orders');
+
+    addDoc(ordersCollection, orderData)
+      .then(() => {
+        clearCart();
+        toast({
+          title: 'Pagamento Aprovado!',
+          description: 'Seu pedido foi realizado com sucesso. Obrigado por sua compra!',
+        });
+        router.push('/orders');
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: ordersCollection.path,
+            operation: 'create',
+            requestResourceData: orderData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        
+        toast({
+            variant: 'destructive',
+            title: 'Erro no Pedido',
+            description: 'Não foi possível registrar seu pedido. Tente novamente.',
+        });
+      }).finally(() => {
+          setIsProcessing(false);
+      });
   };
 
   return (
@@ -99,9 +139,9 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex-col items-stretch gap-4">
-                <Button type="submit" size="lg" className="w-full">
+                <Button type="submit" size="lg" className="w-full" disabled={isProcessing}>
                   <Lock className="mr-2 h-4 w-4" />
-                  Pagar R${totalPrice.toFixed(2).replace('.', ',')}
+                  {isProcessing ? 'Processando...' : `Pagar R$${totalPrice.toFixed(2).replace('.', ',')}`}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
                     <Lock className="h-3 w-3"/> Pagamento seguro e criptografado.
