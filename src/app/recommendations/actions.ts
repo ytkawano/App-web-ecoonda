@@ -33,7 +33,7 @@ function getScoredRecommendations(
   sustainabilityPreferences: string[],
   purchaseHistory: string[]
 ): Product[] {
-  return products
+  const scoredProducts = products
     .filter(p => !purchaseHistory.includes(p.id))
     .map(product => {
       let score = 0;
@@ -47,8 +47,10 @@ function getScoredRecommendations(
       ).length;
       
       return { product, score };
-    })
-    .filter(item => item.score > 0)
+    });
+  
+  // Sort by score and return the top 3, even if the score is 0
+  return scoredProducts
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
     .map(item => item.product);
@@ -86,7 +88,8 @@ export async function fetchRecommendations(
         key: Date.now() 
       };
     } else {
-      return { error: 'Não foi possível encontrar produtos para suas preferências.', key: Date.now() };
+      // This case should be less frequent now, but it's a good fallback.
+      return { error: 'Não foi possível encontrar produtos na nossa base de dados.', key: Date.now() };
     }
   } catch (e) {
     console.error(e);
