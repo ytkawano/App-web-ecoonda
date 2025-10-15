@@ -13,24 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import type { UserProfile } from '@/lib/types';
 
 
 // Helper function to update user profile with error handling
 function updateUserProfile(db: Firestore, userId: string, data: Partial<UserProfile>) {
   const docRef = doc(db, 'users', userId);
-
-  setDoc(docRef, data, { merge: true })
-    .catch(async (serverError) => {
-      const permissionError = new FirestorePermissionError({
-        path: docRef.path,
-        operation: 'update',
-        requestResourceData: data,
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
-    });
+  // Return the promise
+  return setDoc(docRef, data, { merge: true });
 }
 
 
@@ -120,19 +110,26 @@ export default function ProfilePage() {
           address: address
       };
 
-      updateUserProfile(db, user.uid, userProfileData);
+      // Now we await the promise from the helper function
+      await updateUserProfile(db, user.uid, userProfileData);
 
       toast({
         title: 'Perfil Atualizado!',
         description: 'Suas informações foram salvas com sucesso.',
       });
       setTimeout(() => router.push('/account'), 1000); 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      
+      let description = 'Não foi possível salvar suas informações. Tente novamente.';
+      if(error.code === 'permission-denied') {
+        description = 'Você não tem permissão para salvar. Verifique as regras de segurança do Firestore.'
+      }
+
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar',
-        description: 'Não foi possível salvar suas informações. Tente novamente.',
+        description: description,
       });
     } finally {
       setLoading(false);
