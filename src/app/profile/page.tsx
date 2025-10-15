@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { updateProfile } from 'firebase/auth';
-import { doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -14,14 +14,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserProfile } from '@/lib/types';
-
-
-// Helper function to update user profile with error handling
-function updateUserProfile(db: Firestore, userId: string, data: Partial<UserProfile>) {
-  const docRef = doc(db, 'users', userId);
-  // Return the promise
-  return setDoc(docRef, data, { merge: true });
-}
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 export default function ProfilePage() {
@@ -87,53 +81,66 @@ export default function ProfilePage() {
 
     setLoading(true);
     let newPhotoURL = photoURL;
+    let userProfileData: Partial<UserProfile>;
 
     try {
-      if (imageFile) {
-        setLoadingMessage('Enviando imagem...');
-        const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
-        const uploadResult = await uploadBytes(storageRef, imageFile);
-        newPhotoURL = await getDownloadURL(uploadResult.ref);
-      }
+        if (imageFile) {
+            setLoadingMessage('Enviando imagem...');
+            const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
+            const uploadResult = await uploadBytes(storageRef, imageFile);
+            newPhotoURL = await getDownloadURL(uploadResult.ref);
+        }
 
-      setLoadingMessage('Atualizando perfil...');
-      await updateProfile(user, { 
-          displayName, 
-          photoURL: newPhotoURL 
-      });
+        setLoadingMessage('Atualizando perfil...');
+        await updateProfile(user, { 
+            displayName, 
+            photoURL: newPhotoURL 
+        });
 
-      const userProfileData: Partial<UserProfile> = {
-          uid: user.uid,
-          email: user.email!,
-          displayName: displayName,
-          photoURL: newPhotoURL,
-          address: address
-      };
+        userProfileData = {
+            uid: user.uid,
+            email: user.email!,
+            displayName: displayName,
+            photoURL: newPhotoURL,
+            address: address
+        };
 
-      // Now we await the promise from the helper function
-      await updateUserProfile(db, user.uid, userProfileData);
+        const docRef = doc(db, 'users', user.uid);
+        
+        setDoc(docRef, userProfileData, { merge: true })
+          .then(() => {
+              toast({
+                  title: 'Perfil Atualizado!',
+                  description: 'Suas informações foram salvas com sucesso.',
+              });
+              setLoading(false);
+              setTimeout(() => router.push('/account'), 1000); 
+          })
+          .catch(async (serverError) => {
+              const permissionError = new FirestorePermissionError({
+                  path: docRef.path,
+                  operation: 'update',
+                  requestResourceData: userProfileData,
+              });
+              errorEmitter.emit('permission-error', permissionError);
+              
+              // We still need to handle the UI feedback for the user
+              toast({
+                  variant: 'destructive',
+                  title: 'Erro de Permissão',
+                  description: 'Você não tem permissão para salvar. Verifique as regras de segurança.',
+              });
+              setLoading(false);
+          });
 
-      toast({
-        title: 'Perfil Atualizado!',
-        description: 'Suas informações foram salvas com sucesso.',
-      });
-      setTimeout(() => router.push('/account'), 1000); 
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      
-      let description = 'Não foi possível salvar suas informações. Tente novamente.';
-      if(error.code === 'permission-denied') {
-        description = 'Você não tem permissão para salvar. Verifique as regras de segurança do Firestore.'
-      }
-
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao atualizar',
-        description: description,
-      });
-    } finally {
-      setLoading(false);
-      setLoadingMessage('Salvando...');
+    } catch (error) {
+        console.error('An unexpected error occurred:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Erro Inesperado',
+            description: 'Não foi possível completar a operação. Tente novamente.',
+        });
+        setLoading(false);
     }
   };
 
