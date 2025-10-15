@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirestore } from '@/firebase';
 import type { Product } from '@/lib/types';
 import { productCategories } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,11 +13,13 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
+  const firestore = useFirestore();
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!firestore) return;
       setLoading(true);
-      const productsCollection = collection(db, 'products');
+      const productsCollection = collection(firestore, 'products');
       const productSnapshot = await getDocs(productsCollection);
       const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
       setProducts(productList);
@@ -25,7 +27,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [firestore]);
 
   const filteredProducts = products.filter(product => 
     activeCategory === 'all' || product.category === activeCategory

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirestore } from '@/firebase';
 import { getAnalytics, logEvent } from "firebase/analytics";
 import ProductCard from '@/components/products/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,10 +11,12 @@ import type { Product } from '@/lib/types';
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const productsCollection = collection(db, 'products');
+      if (!firestore) return;
+      const productsCollection = collection(firestore, 'products');
       const productSnapshot = await getDocs(productsCollection);
       const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
       setProducts(productList);
@@ -38,7 +40,7 @@ export default function ShopPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [firestore]);
 
   return (
     <div className="bg-background">

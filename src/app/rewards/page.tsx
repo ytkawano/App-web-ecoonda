@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/firebase';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc, increment, arrayUnion, writeBatch } from 'firebase/firestore';
+import { useAuth, useFirestore } from '@/firebase';
+import { doc, getDoc, updateDoc, increment, writeBatch } from 'firebase/firestore';
 import type { UserProfile, Reward } from '@/lib/types';
 import { rewards } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +15,7 @@ import { useCart } from '@/context/CartContext';
 
 export default function RewardsPage() {
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const { applyCoupon } = useCart();
@@ -23,8 +23,8 @@ export default function RewardsPage() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
+      if (user && firestore) {
+        const userDocRef = doc(firestore, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) {
           setUserData(docSnap.data() as UserProfile);
@@ -35,10 +35,10 @@ export default function RewardsPage() {
     if (!authLoading) {
       fetchUserData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, firestore]);
 
   const handleRedeem = async (reward: Reward) => {
-    if (!user || !userData) return;
+    if (!user || !userData || !firestore) return;
     if (userData.ecoPoints < reward.pointsRequired) {
       toast({
         variant: "destructive",
@@ -49,10 +49,10 @@ export default function RewardsPage() {
     }
 
     try {
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(firestore, 'users', user.uid);
         
         // Use a batch write to ensure atomic operation
-        const batch = writeBatch(db);
+        const batch = writeBatch(firestore);
         
         // Decrement points
         batch.update(userDocRef, { ecoPoints: increment(-reward.pointsRequired) });

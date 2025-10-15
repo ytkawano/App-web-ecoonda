@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SplashScreen from "@/components/layout/SplashScreen";
-import { initializeFirebase } from "@/firebase";
 import FirebaseClientProvider from "@/firebase/client-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -23,11 +22,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const firebase = initializeFirebase();
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} ${unbounded.variable} font-sans`}>
-        <FirebaseClientProvider value={firebase}>
+        <FirebaseClientProvider>
           <CartProvider>
             <WishlistProvider>
               <SplashScreen />

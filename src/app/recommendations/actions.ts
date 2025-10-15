@@ -1,7 +1,7 @@
 'use server';
 
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { initializeFirebase } from '@/firebase';
 import { Product } from '@/lib/types';
 import { z } from 'zod';
 
@@ -21,7 +21,8 @@ export type RecommendationState = {
 
 // This function fetches all products from Firestore
 async function getAllProducts(): Promise<Product[]> {
-  const productsCollection = collection(db, 'products');
+  const { firestore } = initializeFirebase();
+  const productsCollection = collection(firestore, 'products');
   const productSnapshot = await getDocs(productsCollection);
   return productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 }

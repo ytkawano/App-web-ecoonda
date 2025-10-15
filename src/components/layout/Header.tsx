@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useAuth } from '@/firebase';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
@@ -34,12 +33,13 @@ const mainNavLinks = [
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, auth } = useAuth();
   const { wishlist } = useWishlist();
   const { totalItems } = useCart();
   const { toast } = useToast();
 
   const handleLogout = async () => {
+    if (!auth) return;
     await signOut(auth);
     toast({ title: "Você saiu da sua conta." });
   };

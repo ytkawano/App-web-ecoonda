@@ -3,21 +3,21 @@
 import { useState, useEffect } from 'react';
 import ImpactTracker from '@/components/dashboard/ImpactTracker';
 import { impactBadges as allImpactBadges } from '@/lib/data';
-import { useAuth } from '@/firebase';
-import { db } from '@/lib/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ImpactPage() {
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
+      if (user && firestore) {
+        const userDocRef = doc(firestore, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) {
           setUserData(docSnap.data() as UserProfile);
@@ -28,7 +28,7 @@ export default function ImpactPage() {
     if (!authLoading) {
       fetchUserData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, firestore]);
 
   const userImpact = {
     plasticSaved: userData?.plasticSaved || 0,

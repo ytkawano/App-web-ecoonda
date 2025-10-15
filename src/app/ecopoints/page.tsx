@@ -13,9 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import type { UserProfile, Challenge } from '@/lib/types';
 import { challenges as allChallenges, impactBadges } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,14 +45,15 @@ const ImpactStat = ({ value, label, icon: Icon }: { value: string | number, labe
 
 export default function EcoPointsPage() {
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
+      if (user && firestore) {
+        const userDocRef = doc(firestore, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) {
           const data = docSnap.data() as UserProfile;
@@ -74,7 +74,7 @@ export default function EcoPointsPage() {
     if (!authLoading) {
       fetchUserData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, firestore]);
 
   const earnedBadges = impactBadges.filter(b => userData?.earnedBadges?.includes(b.name));
 

@@ -2,7 +2,7 @@
 
 import RecommendationEngine from "@/components/recommendations/RecommendationEngine";
 import { Product } from "@/lib/types";
-import { db } from "@/lib/firebase";
+import { useFirestore } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function RecommendationsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
   // Define initial preferences locally to fix the import error
   const userPreferences = {
@@ -20,9 +21,10 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!firestore) return;
       setLoading(true);
       try {
-        const productsCollection = collection(db, 'products');
+        const productsCollection = collection(firestore, 'products');
         const productSnapshot = await getDocs(productsCollection);
         const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
         setAllProducts(productList);
@@ -34,7 +36,7 @@ export default function RecommendationsPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [firestore]);
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">

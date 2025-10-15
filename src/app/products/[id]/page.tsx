@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -26,13 +26,14 @@ export default function ProductDetailPage({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const firestore = useFirestore();
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!params.id) return;
+      if (!params.id || !firestore) return;
       setLoading(true);
       try {
-        const docRef = doc(db, 'products', params.id);
+        const docRef = doc(firestore, 'products', params.id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -49,7 +50,7 @@ export default function ProductDetailPage({
     };
 
     fetchProduct();
-  }, [params.id]);
+  }, [params.id, firestore]);
 
   if (loading) {
     return (

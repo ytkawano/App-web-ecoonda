@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import EcoChallenges from "@/components/dashboard/EcoChallenges";
 import { challenges as allChallenges } from "@/lib/data";
-import { useAuth } from '@/firebase';
-import { db } from '@/lib/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile, Challenge } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,13 +11,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ChallengesPage() {
     const { user, loading: authLoading } = useAuth();
+    const firestore = useFirestore();
     const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserProgress = async () => {
-            if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
+            if (user && firestore) {
+                const userDocRef = doc(firestore, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
                 const userData = userDoc.data() as UserProfile;
 
@@ -41,7 +41,7 @@ export default function ChallengesPage() {
             fetchUserProgress();
         }
 
-    }, [user, authLoading]);
+    }, [user, authLoading, firestore]);
 
     return (
         <div>

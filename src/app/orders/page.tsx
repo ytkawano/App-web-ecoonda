@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -15,18 +14,19 @@ export default function OrderHistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
 
   useEffect(() => {
     async function fetchOrders() {
       if (authLoading) return;
-      if (!user) {
+      if (!user || !firestore) {
         setLoading(false);
         return;
       }
 
       try {
         const ordersQuery = query(
-          collection(db, "orders"),
+          collection(firestore, "orders"),
           where("userId", "==", user.uid),
           orderBy("createdAt", "desc")
         );
@@ -49,7 +49,7 @@ export default function OrderHistoryPage() {
     }
 
     fetchOrders();
-  }, [user, authLoading]);
+  }, [user, authLoading, firestore]);
 
   if (loading || authLoading) {
     return (

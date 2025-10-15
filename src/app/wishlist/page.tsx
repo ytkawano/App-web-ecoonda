@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirestore } from '@/firebase';
 import { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -16,18 +16,19 @@ export default function WishlistPage() {
   const { wishlist } = useWishlist();
   const [wishlistedProducts, setWishlistedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
   useEffect(() => {
     const fetchWishlistedProducts = async () => {
       setLoading(true);
-      if (wishlist.length === 0) {
+      if (wishlist.length === 0 || !firestore) {
         setWishlistedProducts([]);
         setLoading(false);
         return;
       }
       
       try {
-        const productsQuery = query(collection(db, 'products'), where('__name__', 'in', wishlist));
+        const productsQuery = query(collection(firestore, 'products'), where('__name__', 'in', wishlist));
         const querySnapshot = await getDocs(productsQuery);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
         setWishlistedProducts(products);
@@ -39,7 +40,7 @@ export default function WishlistPage() {
     };
 
     fetchWishlistedProducts();
-  }, [wishlist]);
+  }, [wishlist, firestore]);
 
 
   return (

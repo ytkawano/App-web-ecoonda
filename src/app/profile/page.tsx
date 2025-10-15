@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +19,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [address, setAddress] = useState({
@@ -37,14 +37,14 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
+    if (user && firestore) {
       setDisplayName(user.displayName || '');
       const userPhoto = user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`;
       setPhotoURL(userPhoto);
       setImagePreview(userPhoto);
       
       const fetchUserData = async () => {
-          const userDocRef = doc(db, 'users', user.uid);
+          const userDocRef = doc(firestore, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
           if (docSnap.exists()) {
               const userData = docSnap.data() as UserProfile;
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       };
       fetchUserData();
     }
-  }, [user]);
+  }, [user, firestore]);
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,11 +77,12 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !firestore) return;
 
     setLoading(true);
     let newPhotoURL = photoURL;
     let userProfileData: Partial<UserProfile>;
+    const storage = getStorage();
 
     try {
         if (imageFile) {
@@ -105,7 +106,7 @@ export default function ProfilePage() {
             address: address
         };
 
-        const docRef = doc(db, 'users', user.uid);
+        const docRef = doc(firestore, 'users', user.uid);
         
         setDoc(docRef, userProfileData, { merge: true })
           .then(() => {

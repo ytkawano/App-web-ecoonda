@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirestore } from '@/firebase';
 import { Product } from '@/lib/types';
 import ProductCard from '@/components/products/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,12 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       setLoading(true);
+      if (!firestore) return;
+
       try {
-        const productsQuery = query(collection(db, 'products'), limit(3));
+        const productsQuery = query(collection(firestore, 'products'), limit(3));
         const querySnapshot = await getDocs(productsQuery);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
         setFeaturedProducts(products);
@@ -31,7 +34,7 @@ export default function Home() {
     };
 
     fetchFeaturedProducts();
-  }, []);
+  }, [firestore]);
 
   return (
     <div className="bg-background text-foreground">
