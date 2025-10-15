@@ -132,15 +132,7 @@ export default function EcoPointsPage() {
       return <div className='container mx-auto text-center py-12'>Faça login para ver seus EcoPoints.</div>
   }
 
-  const currentData = userData || {
-    ecoPoints: 0,
-    plasticSaved: 0,
-    co2Avoided: 0,
-    returnsMade: 0,
-    earnedBadges: [],
-  };
-
-  const earnedBadges = impactBadges.filter(b => (currentData.earnedBadges || []).includes(b.name));
+  const earnedBadges = impactBadges.filter(b => (userData?.earnedBadges || []).includes(b.name));
 
   return (
     <div className="bg-background min-h-screen text-foreground">
@@ -158,7 +150,7 @@ export default function EcoPointsPage() {
           <div className="flex items-center gap-4 rounded-full bg-card p-4 shadow-md">
             <Leaf className="h-10 w-10 text-green-500" />
             <div className="text-right">
-              <span className="block text-3xl font-bold text-primary">{currentData.ecoPoints}</span>
+              <span className="block text-3xl font-bold text-primary">{userData?.ecoPoints ?? 0}</span>
               <span className="text-sm text-muted-foreground">EcoPoints</span>
             </div>
           </div>
@@ -181,10 +173,10 @@ export default function EcoPointsPage() {
                   <CardDescription>Pequenas ações, grande diferença.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                    <ImpactStat value={`${(currentData.plasticSaved / 1000).toFixed(2)}kg`} label="Plástico Economizado" icon={Shield} />
-                    <ImpactStat value={`${currentData.co2Avoided.toFixed(2)}kg`} label="CO₂ Evitado" icon={Sprout} />
-                    <ImpactStat value={currentData.returnsMade} label="Devoluções Feitas" icon={Recycle} />
-                    <ImpactStat value={currentData.ecoPoints} label="Total de Pontos" icon={Leaf} />
+                    <ImpactStat value={`${((userData?.plasticSaved ?? 0) / 1000).toFixed(2)}kg`} label="Plástico Economizado" icon={Shield} />
+                    <ImpactStat value={`${(userData?.co2Avoided ?? 0).toFixed(2)}kg`} label="CO₂ Evitado" icon={Sprout} />
+                    <ImpactStat value={userData?.returnsMade ?? 0} label="Devoluções Feitas" icon={Recycle} />
+                    <ImpactStat value={userData?.ecoPoints ?? 0} label="Total de Pontos" icon={Leaf} />
                 </CardContent>
               </Card>
 
@@ -286,5 +278,3 @@ export default function EcoPointsPage() {
     </div>
   );
 }
-
-    
