@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { User, Mail, Phone, MapPin, Award, Shield, Recycle, Sprout, Droplets, Leaf, Star } from 'lucide-react';
 import { impactBadges } from '@/lib/data';
 import React from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 const iconComponents: { [key: string]: React.ElementType } = {
     Sprout,
@@ -15,16 +16,25 @@ const iconComponents: { [key: string]: React.ElementType } = {
     Star
   };
 
-const UserInfoLine = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
+const UserInfoLine = ({ icon: Icon, text }: { icon: React.ElementType, text: string | null | undefined }) => (
   <div className="flex items-center text-muted-foreground">
     <Icon className="h-5 w-5 mr-3 text-accent" />
-    <span>{text}</span>
+    <span>{text || 'Não informado'}</span>
   </div>
 );
 
 export default function ProfilePage() {
 
+    const { user, loading } = useAuth();
     const earnedBadges = impactBadges.slice(0, 4);
+
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    }
+
+    if (!user) {
+        return <div className="flex h-screen items-center justify-center">Por favor, faça login para ver seu perfil.</div>;
+    }
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -34,17 +44,17 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
                 <img 
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d" 
+                    src={user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
                     alt="Foto do Perfil" 
                     className="w-32 h-32 rounded-full border-4 border-primary mb-6 sm:mb-0 sm:mr-8"
                 />
                 <div className="flex-grow">
-                    <h1 className="font-headline text-4xl font-bold text-primary">Ana Costa</h1>
-                    <p className="text-lg text-muted-foreground mt-1">Membro desde 20 de Abril de 2023</p>
+                    <h1 className="font-headline text-4xl font-bold text-primary">{user.displayName || 'Usuário'}</h1>
+                    <p className="text-lg text-muted-foreground mt-1">Membro desde {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric'}) : 'data desconhecida'}</p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                        <UserInfoLine icon={Mail} text="ana.costa@example.com" />
-                        <UserInfoLine icon={Phone} text="+55 (11) 98765-4321" />
+                        <UserInfoLine icon={Mail} text={user.email} />
+                        <UserInfoLine icon={Phone} text={user.phoneNumber} />
                         <UserInfoLine icon={MapPin} text="Rua das Flores, 123, São Paulo, SP" />
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 'use server';
 
-import { products as allProducts } from '@/lib/products';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Product } from '@/lib/types';
 import { z } from 'zod';
 
@@ -17,6 +18,13 @@ export type RecommendationState = {
   error?: string;
   key?: number;
 };
+
+// This function fetches all products from Firestore
+async function getAllProducts(): Promise<Product[]> {
+  const productsCollection = collection(db, 'products');
+  const productSnapshot = await getDocs(productsCollection);
+  return productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+}
 
 // This function filters products based on a simple scoring mechanism.
 function getScoredRecommendations(
@@ -61,6 +69,7 @@ export async function fetchRecommendations(
   }
 
   try {
+    const allProducts = await getAllProducts();
     const { skinType, sustainabilityPreferences, purchaseHistory } = validatedFields.data;
 
     // Get recommendations using the new scoring logic

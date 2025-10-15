@@ -1,6 +1,8 @@
 'use client';
 
-import { products } from '@/lib/products';
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { placeholderImages } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -13,14 +15,57 @@ import {
 } from '@/components/ui/accordion';
 import { Leaf, Recycle, Shield } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { Product } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const product = products.find((p) => p.id === params.id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!params.id) return;
+      setLoading(true);
+      try {
+        const docRef = doc(db, 'products', params.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
+        } else {
+          notFound();
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto max-w-6xl px-4 py-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+          <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+          <div className="flex flex-col justify-center space-y-4">
+            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();

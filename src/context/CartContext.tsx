@@ -94,6 +94,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const calculateTotalPrice = () => {
       if(coupon) {
+          const isPercentageDiscount = coupon.code.startsWith('R$');
+          if (isPercentageDiscount) {
+            return Math.max(0, subtotal - coupon.discount);
+          }
           const discountAmount = subtotal * (coupon.discount / 100);
           return Math.max(0, subtotal - discountAmount);
       }

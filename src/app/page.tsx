@@ -1,12 +1,37 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { products } from '@/lib/products';
-import ProductCard from '@/components/products/ProductCard';
 import { ArrowRight, Leaf, Waves, Recycle, Heart, WandSparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Product } from '@/lib/types';
+import ProductCard from '@/components/products/ProductCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const featuredProducts = products.slice(0, 3);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      setLoading(true);
+      try {
+        const productsQuery = query(collection(db, 'products'), limit(3));
+        const querySnapshot = await getDocs(productsQuery);
+        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+        setFeaturedProducts(products);
+      } catch (error) {
+        console.error("Error fetching featured products: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   return (
     <div className="bg-background text-foreground">
@@ -107,9 +132,21 @@ export default function Home() {
             Favoritos da Comunidade
           </h2>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex flex-col space-y-3">
+                        <Skeleton className="h-[250px] w-full rounded-xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                    </div>
+                ))
+            ) : (
+                featuredProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                ))
+            )}
           </div>
         </div>
       </section>

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import React from 'react';
 import OrderHistory from '@/components/dashboard/OrderHistory';
+import { useAuth } from '@/context/AuthContext';
 
 
 const iconComponents: { [key: string]: React.ElementType } = {
@@ -55,8 +56,17 @@ const AccountSection = ({ icon: Icon, title, description, link, linkText, childr
   );
 
 export default function AccountPage() {
+    const { user, loading } = useAuth();
     const userPoints = userImpact.pointsEarned;
     const earnedBadges = impactBadges.slice(0, 4);
+
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    }
+
+    if (!user) {
+        return <div className="flex h-screen items-center justify-center">Por favor, faça login para ver sua conta.</div>;
+    }
 
 
   return (
@@ -67,13 +77,13 @@ export default function AccountPage() {
         <header className="mb-12 text-center">
             <div className="inline-block bg-card p-4 rounded-full mb-4">
                 <img 
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d" 
+                    src={user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
                     alt="Foto do Perfil" 
                     className="w-24 h-24 rounded-full border-4 border-primary"
                 />
             </div>
             <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">
-              Bem-vinda, Ana Costa!
+              Bem-vindo(a), {user.displayName || 'Usuário'}!
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
               Este é o seu painel pessoal. Acompanhe seu impacto e suas atividades.
@@ -161,8 +171,8 @@ export default function AccountPage() {
                 linkText='Editar perfil'
             >
                 <div className="space-y-3">
-                    <p className="font-semibold">Ana Costa</p>
-                    <p className="text-sm text-muted-foreground">ana.costa@example.com</p>
+                    <p className="font-semibold">{user.displayName || 'Usuário'}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
                     <p className="text-sm text-muted-foreground">Rua das Flores, 123, São Paulo, SP</p>
                 </div>
             </AccountSection>
