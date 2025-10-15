@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { doc, setDoc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -19,6 +23,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { user, auth, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -30,7 +35,7 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || !firestore) return;
     setLoading(true);
     setError(null);
 
@@ -45,8 +50,38 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
       
-      toast({ title: 'Cadastro bem-sucedido!', description: 'Você será redirecionado para a página inicial.' });
-      router.push('/');
+      // Create user profile in Firestore
+      const userProfile: UserProfile = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email!,
+        displayName: name,
+        photoURL: userCredential.user.photoURL || '',
+        address: { street: '', number: '', city: '', state: '' },
+        ecoPoints: 0,
+        plasticSaved: 0,
+        co2Avoided: 0,
+        returnsMade: 0,
+        earnedBadges: [],
+        purchaseHistory: [],
+      };
+
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      setDoc(userDocRef, userProfile)
+        .then(() => {
+          toast({ title: 'Cadastro bem-sucedido!', description: 'Você será redirecionado para a página inicial.' });
+          router.push('/');
+        })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'create',
+                requestResourceData: userProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setError('Não foi possível criar o perfil de usuário.');
+            toast({ title: 'Erro de Cadastro', description: 'Não foi possível criar seu perfil. Tente novamente.', variant: 'destructive' });
+        });
+
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
       let errorMessage = 'Ocorreu um erro ao se cadastrar.';

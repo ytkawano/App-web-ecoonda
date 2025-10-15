@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { useAuth, useFirestore } from '@/firebase';
 import { useEffect, useState } from 'react';
 import { placeholderImages } from '@/lib/data';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, writeBatch, serverTimestamp, increment, arrayUnion } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import type { Order } from '@/lib/types';
@@ -58,6 +58,10 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
+    const batch = writeBatch(firestore);
+
+    // 1. Criar o novo pedido
+    const orderRef = doc(collection(firestore, 'orders'));
     const orderData: Omit<Order, 'id' | 'createdAt'> & { createdAt: any } = {
         userId: user.uid,
         createdAt: serverTimestamp(),
@@ -70,23 +74,33 @@ export default function CheckoutPage() {
             price: item.price
         })),
     };
+    batch.set(orderRef, orderData);
 
-    const ordersCollection = collection(firestore, 'orders');
+    // 2. Atualizar o perfil do usuário com EcoPoints e histórico de compras
+    const userRef = doc(firestore, 'users', user.uid);
+    const pointsToAward = Math.round(totalPrice);
+    const productIds = cart.map(item => item.id);
+    
+    const userUpdateData = {
+        ecoPoints: increment(pointsToAward),
+        purchaseHistory: arrayUnion(...productIds)
+    };
+    batch.update(userRef, userUpdateData);
 
-    addDoc(ordersCollection, orderData)
+    batch.commit()
       .then(() => {
         clearCart();
         toast({
           title: 'Pagamento Aprovado!',
-          description: 'Seu pedido foi realizado com sucesso. Obrigado por sua compra!',
+          description: `Seu pedido foi realizado e você ganhou ${pointsToAward} EcoPoints!`,
         });
         router.push('/orders');
       })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
-            path: ordersCollection.path,
-            operation: 'create',
-            requestResourceData: orderData,
+            path: `BATCH WRITE: orders/${orderRef.id} and users/${user.uid}`,
+            operation: 'write',
+            requestResourceData: {order: orderData, userUpdate: userUpdateData},
         });
         errorEmitter.emit('permission-error', permissionError);
         
