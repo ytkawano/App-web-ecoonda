@@ -1,122 +1,108 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user profiles and allows public read access to product and challenge data. Orders are also restricted to user-specific access.
+ * @fileoverview Firestore Security Rules for the application.
  *
- * @dataStructure
- * - /users/{userId}: Stores public user profile information. Each user can only access their own profile.
- * - /products/{productId}: Stores details about individual products. This collection is publicly readable.
- * - /orders/{orderId}: Stores customer order information. Each user can only access their own orders.
- * - /challenges/{challengeId}: Stores available challenges for users. This collection is publicly readable.
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles, allowing users to read and write their own profile data.
+ * Products and Challenges are publicly readable but not writable by clients.
+ * Orders are owned by users, enabling them to create, read, and potentially update or delete their own orders.
  *
- * @keySecurityDecisions
- * - User profiles are private and only accessible to the owner.
- * - Product and Challenge details are publicly readable, but writes are disabled.
- * - Orders are private and only accessible to the order creator.
+ * Data Structure:
+ * - /users/{userId}: Stores user profile data, with 'userId' matching the Firebase auth UID.
+ * - /products/{productId}: Stores product details.
+ * - /orders/{orderId}: Stores order information, with 'userId' linking to the user who placed the order.
+ * - /challenges/{challengeId}: Stores available challenges.
+ *
+ * Key Security Decisions:
+ * - Users can only manage their own profiles.
+ * - Product and challenge data is publicly readable.
+ * - Orders are user-specific.
+ *
+ * Denormalization for Authorization:
+ * - The 'Order' entity requires a 'userId' field to link the order to the user. This allows for efficient owner-based security rules without additional queries.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile access, ensuring only the owner can read and write their own profile.
+     * @description Allows users to read and write their own profile data.
      * @path /users/{userId}
-     * @allow (create) - User with UID 'user123' can create a profile with document ID 'user123'.
-     * @allow (get) - User with UID 'user123' can read their own profile at /users/user123.
-     * @allow (update) - User with UID 'user123' can update their own profile at /users/user123.
-     * @allow (delete) - User with UID 'user123' can delete their own profile at /users/user123.
-     * @deny (create) - User with UID 'user456' cannot create a profile with document ID 'user123'.
-     * @deny (get) - User with UID 'user456' cannot read the profile at /users/user123.
-     * @deny (update) - User with UID 'user456' cannot update the profile at /users/user123.
-     * @deny (delete) - User with UID 'user456' cannot delete the profile at /users/user123.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with uid "user123" can create their profile if request.auth.uid == "user123".
+     * @allow (get) User with uid "user123" can read their profile.
+     * @allow (update) User with uid "user123" can update their profile.
+     * @allow (delete) User with uid "user123" can delete their profile.
+     * @deny (create) User with uid "user456" cannot create profile for "user123".
+     * @principle Enforces document ownership for writes, restricting access to a user's own data.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the requested user ID matches the authenticated user ID
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
 
-      // Helper function to check if the user is an existing owner (exists + isOwner)
-      function isExistingOwner(userId) {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Allows anyone to read product information, but prevents modification.
+     * @path /products/{productId}
+     * @allow (get) Any user can read product details.
+     * @allow (list) Any user can list products.
+     * @deny (create) No one can create products via client.
+     * @deny (update) No one can update products via client.
+     * @deny (delete) No one can delete products via client.
+     * @principle Provides public read access while restricting write access.
+     */
+    match /products/{productId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows users to create, read, update, and delete their own orders.
+     * @path /orders/{orderId}
+     * @allow (create) User with uid "user123" can create an order with userId "user123".
+     * @allow (get) User with uid "user123" can read order if order.userId == "user123".
+     * @deny (create) User with uid "user456" cannot create an order for "user123".
+     * @principle Enforces document ownership, allowing users to manage their own orders.
+     */
+    match /orders/{orderId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+        function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false;
-
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow get: if isExistingOwner(resource.data.userId);
+      allow list: if false; // TODO: Only allow listing of own orders
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if isExistingOwner(resource.data.userId) ;
+      allow delete: if isExistingOwner(resource.data.userId);
     }
 
     /**
-     * @description Manages product data access, allowing public read access but denying all write access.
-     * @path /products/{productId}
-     * @allow (get) - Any user can read product data.
-     * @allow (list) - Any user can list products.
-     * @deny (create) - No user can create product data.
-     * @deny (update) - No user can update product data.
-     * @deny (delete) - No user can delete product data.
-     * @principle Allows public read access while restricting write access.
+     * @description Allows anyone to read challenge information, but prevents modification.
+     * @path /challenges/{challengeId}
+     * @allow (get) Any user can read challenge details.
+     * @allow (list) Any user can list challenges.
+     * @deny (create) No one can create challenges via client.
+     * @deny (update) No one can update challenges via client.
+     * @deny (delete) No one can delete challenges via client.
+     * @principle Provides public read access while restricting write access.
      */
-    match /products/{productId} {
-        allow get, list: if true;
-        allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Manages order data access, ensuring only the user who created the order can access it.
-     * @path /orders/{orderId}
-     * @allow (create) - User with UID 'user123' can create an order.
-     * @allow (get) - User with UID 'user123' can read order 'order456' if the order's userId is 'user123'.
-     * @allow (update) - User with UID 'user123' can update order 'order456' if the order's userId is 'user123'.
-     * @allow (delete) - User with UID 'user123' can delete order 'order456' if the order's userId is 'user123'.
-     * @deny (create) - User with UID 'user456' cannot create an order for 'user123'.
-     * @deny (get) - User with UID 'user456' cannot read order 'order456' if the order's userId is 'user123'.
-     * @deny (update) - User with UID 'user456' cannot update order 'order456' if the order's userId is 'user123'.
-     * @deny (delete) - User with UID 'user456' cannot delete order 'order456' if the order's userId is 'user123'.
-     * @principle Enforces document ownership based on the userId field.
-     */
-    match /orders/{orderId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the user is the owner of the order
-      function isOrderOwner() {
-        return resource.data.userId == request.auth.uid;
-      }
-
-      function isExistingOrderOwner() {
-        return isOrderOwner() && resource != null;
-      }
-
-      allow get: if isSignedIn() && isOrderOwner();
-      allow list: if false;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && isExistingOrderOwner() && request.resource.data.userId == resource.data.userId;
-      allow delete: if isSignedIn() && isExistingOrderOwner();
-    }
-
-      /**
-       * @description Manages challenge data access, allowing public read access but denying all write access.
-       * @path /challenges/{challengeId}
-       * @allow (get) - Any user can read challenge data.
-       * @allow (list) - Any user can list challenges.
-       * @deny (create) - No user can create challenge data.
-       * @deny (update) - No user can update challenge data.
-       * @deny (delete) - No user can delete challenge data.
-       * @principle Allows public read access while restricting write access.
-       */
     match /challenges/{challengeId} {
-        allow get, list: if true;
-        allow create, update, delete: if false;
+        allow get: if true;
+        allow list: if true;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
     }
   }
 }
