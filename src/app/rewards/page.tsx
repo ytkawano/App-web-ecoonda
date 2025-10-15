@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Ticket, Leaf } from 'lucide-react';
@@ -6,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
-import { doc, getDoc, updateDoc, increment, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, increment } from 'firebase/firestore';
 import type { UserProfile, Reward } from '@/lib/types';
 import { rewards } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/CartContext';
-
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function RewardsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -48,20 +50,15 @@ export default function RewardsPage() {
       return;
     }
 
-    try {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        
-        // Use a batch write to ensure atomic operation
-        const batch = writeBatch(firestore);
-        
-        // Decrement points
-        batch.update(userDocRef, { ecoPoints: increment(-reward.pointsRequired) });
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const batch = writeBatch(firestore);
+    
+    const updatedPoints = { ecoPoints: increment(-reward.pointsRequired) };
 
-        // Add to point history (optional, can be a subcollection)
-        // For simplicity, we are not implementing a full point history here
+    batch.update(userDocRef, updatedPoints);
 
-        await batch.commit();
-
+    batch.commit()
+      .then(() => {
         setUserData(prev => prev ? { ...prev, ecoPoints: prev.ecoPoints - reward.pointsRequired } : null);
 
         const discountValue = parseInt(reward.title.replace(/[^0-9]/g, ''), 10);
@@ -73,15 +70,22 @@ export default function RewardsPage() {
             title: "Recompensa Resgatada!",
             description: `O cupom ${couponCode} foi aplicado ao seu carrinho.`,
         });
-
-    } catch (error) {
-        console.error("Error redeeming reward:", error);
-        toast({
-            variant: "destructive",
-            title: "Erro ao Resgatar",
-            description: "Não foi possível resgatar sua recompensa. Tente novamente.",
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: updatedPoints,
         });
-    }
+        errorEmitter.emit('permission-error', permissionError);
+        
+        // UI feedback for the user
+        toast({
+            variant: 'destructive',
+            title: 'Erro de Permissão',
+            description: 'Você não tem permissão para resgatar a recompensa. Verifique as regras de segurança.',
+        });
+      });
   };
 
   const userPoints = userData?.ecoPoints || 0;
