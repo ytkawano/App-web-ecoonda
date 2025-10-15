@@ -13,10 +13,13 @@ import {
   Shield,
   Recycle,
   Sprout,
+  Droplets,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import React from 'react';
+import OrderHistory from '@/components/dashboard/OrderHistory';
 
 
 const iconComponents: { [key: string]: React.ElementType } = {
@@ -25,9 +28,11 @@ const iconComponents: { [key: string]: React.ElementType } = {
     Recycle,
     Award,
     Leaf,
+    Droplets,
+    Star,
   };
 
-const AccountSection = ({ icon: Icon, title, description, link, children }: { icon: React.ElementType, title: string, description: string, link: string, children: React.ReactNode }) => (
+const AccountSection = ({ icon: Icon, title, description, link, linkText, children }: { icon: React.ElementType, title: string, description: string, link: string, linkText: string, children: React.ReactNode }) => (
     <Card className="overflow-hidden flex flex-col">
       <CardHeader className="flex-row items-center gap-4 bg-muted/30 p-4 border-b">
         <div className="p-3 bg-accent rounded-full">
@@ -43,7 +48,7 @@ const AccountSection = ({ icon: Icon, title, description, link, children }: { ic
       </CardContent>
       <div className="px-6 pb-4 mt-auto">
         <Button variant="outline" asChild>
-          <Link href={link}>Ver detalhes <ChevronRight className="h-4 w-4 ml-2" /></Link>
+          <Link href={link}>{linkText} <ChevronRight className="h-4 w-4 ml-2" /></Link>
         </Button>
       </div>
     </Card>
@@ -51,7 +56,6 @@ const AccountSection = ({ icon: Icon, title, description, link, children }: { ic
 
 export default function AccountPage() {
     const userPoints = userImpact.pointsEarned;
-    const recentOrder = orders[0];
     const earnedBadges = impactBadges.slice(0, 4);
 
 
@@ -81,9 +85,10 @@ export default function AccountPage() {
             {/* Seção de EcoPoints */}
             <AccountSection 
                 icon={Leaf} 
-                title="EcoPoints" 
+                title="EcoPoints & Emblemas" 
                 description={`Você tem ${userPoints} pontos para usar.`}
                 link="/ecopoints"
+                linkText='Ver todos emblemas'
             >
                 <div className="space-y-6">
                     <div className="grid grid-cols-3 gap-4 text-center">
@@ -121,37 +126,9 @@ export default function AccountPage() {
             </AccountSection>
 
             {/* Seção de Pedidos */}
-            <AccountSection 
-                icon={Package} 
-                title="Pedidos Recentes" 
-                description="Acompanhe o status dos seus últimos pedidos."
-                link="/orders"
-            >
-                {recentOrder ? (
-                    <div className="flow-root">
-                        <dl className="-my-4 divide-y divide-gray-200 text-sm">
-                            <div className="flex items-center justify-between py-4">
-                                <dt className="text-muted-foreground">Pedido</dt>
-                                <dd className="font-medium">#{recentOrder.id.split('_')[1]}</dd>
-                            </div>
-                            <div className="flex items-center justify-between py-4">
-                                <dt className="text-muted-foreground">Data</dt>
-                                <dd className="font-medium">{new Date(recentOrder.date).toLocaleDateString('pt-BR')}</dd>
-                            </div>
-                            <div className="flex items-center justify-between py-4">
-                                <dt className="text-muted-foreground">Status</dt>
-                                <dd><span className="px-2 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary">{recentOrder.status}</span></dd>
-                            </div>
-                            <div className="flex items-center justify-between py-4">
-                                <dt className="text-muted-foreground">Total</dt>
-                                <dd className="font-medium">R$ {recentOrder.total.toFixed(2).replace('.', ',')}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                ) : (
-                    <p>Você ainda não fez nenhum pedido.</p>
-                )}
-            </AccountSection>
+             <div className="col-span-1 lg:col-span-2">
+                <OrderHistory />
+            </div>
 
              {/* Seção de Lista de Desejos */}
              <AccountSection 
@@ -159,6 +136,7 @@ export default function AccountPage() {
                 title="Lista de Desejos" 
                 description="Seus produtos favoritos que você salvou."
                 link="/wishlist"
+                linkText='Ver lista de desejos'
             >
                 {wishlist.length > 0 ? (
                     <div className="flex items-center justify-center -space-x-4 rtl:space-x-reverse">
@@ -180,6 +158,7 @@ export default function AccountPage() {
                 title="Meu Perfil" 
                 description="Gerencie seus dados e informações de contato."
                 link="/profile"
+                linkText='Editar perfil'
             >
                 <div className="space-y-3">
                     <p className="font-semibold">Ana Costa</p>

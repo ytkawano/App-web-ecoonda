@@ -1,10 +1,10 @@
 
-import type { Product, Challenge, UserImpact, ImpactBadge, Reward, PointActivity, Order, WishlistItem } from './types';
+import type { Challenge, UserImpact, ImpactBadge, Reward, PointActivity, Order, WishlistItem } from './types';
 import placeholderJson from './placeholder-images.json';
 
 export const placeholderImages = placeholderJson.placeholderImages;
 
-export const productCategories: Product['category'][] = [
+export const productCategories = [
   'Cuidado Facial',
   'Corpo e Pele',
   'Cuidado Capilar',
@@ -75,24 +75,27 @@ export const pointHistory: PointActivity[] = [
 export const orders: Order[] = [
     {
         id: 'ord_001',
-        date: '2024-07-15',
+        userId: 'user-1',
+        createdAt: '2024-07-15',
         status: 'Entregue',
         total: 125.50,
         items: [
-            { productId: 'prod_001', name: 'Shampoo Força das Algas', quantity: 1 },
-            { productId: 'prod_002', name: 'Condicionador Mar Profundo', quantity: 1 },
+            { id: 'prod_001', name: 'Shampoo Força das Algas', quantity: 1, price: 28.00 },
+            { id: 'prod_002', name: 'Condicionador Mar Profundo', quantity: 1, price: 30.00 },
         ]
     },
     {
         id: 'ord_002',
-        date: '2024-06-22',
+        userId: 'user-1',
+        createdAt: '2024-06-22',
         status: 'Entregue',
         total: 89.90,
         items: [
-            { productId: 'prod_003', name: 'Sérum Orvalho do Mar', quantity: 1 },
+            { id: 'prod_003', name: 'Sérum Orvalho do Mar', quantity: 1, price: 48.00 },
         ]
     }
-];
+].map(o => ({ ...o, createdAt: new Date(o.createdAt) }));
+
 
 export const wishlist: WishlistItem[] = [
     { id: 'wish_001', productId: 'prod_004', name: 'Máscara de Argila Purificante', imageUrl: '/mascara de argila.jpeg' },

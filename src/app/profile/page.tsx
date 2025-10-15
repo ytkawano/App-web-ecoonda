@@ -1,6 +1,7 @@
 'use client';
 
-import { User, Mail, Phone, MapPin, Award, Shield, Recycle, Sprout } from 'lucide-react';
+import Link from 'next/link';
+import { User, Mail, Phone, MapPin, Award, Shield, Recycle, Sprout, Droplets, Leaf, Star } from 'lucide-react';
 import { impactBadges } from '@/lib/data';
 import React from 'react';
 
@@ -9,6 +10,9 @@ const iconComponents: { [key: string]: React.ElementType } = {
     Shield,
     Recycle,
     Award,
+    Droplets,
+    Leaf,
+    Star
   };
 
 const UserInfoLine = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
@@ -64,10 +68,10 @@ export default function ProfilePage() {
                         </div>
                     );
                 })}
-                 <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg text-muted-foreground">
+                 <Link href="/ecopoints" className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
                     <Award className="h-10 w-10 mb-2" />
                     <p className="font-semibold text-sm">Veja todos</p>
-                 </div>
+                 </Link>
                 </div>
             </div>
 

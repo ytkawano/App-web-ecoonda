@@ -1,4 +1,6 @@
 
+import { Timestamp } from "firebase/firestore";
+
 export type Product = {
     id: string;
     name: string;
@@ -11,8 +13,8 @@ export type Product = {
         description: string;
         environmentalImpact: string;
     }[];
-    sustainabilityAttributes: ('vegano' | 'livre-de-crueldade' | 'embalagem-sem-plástico' | 'materiais-reciclados')[];
-    suitableSkinTypes: ('oleosa' | 'seca' | 'normal' | 'mista' | 'sensível')[];
+    sustainabilityAttributes: ('vegano' | 'livre-de-crueldade' | 'embalagem-sem-plástico' | 'materiais-reciclados' | 'comércio-justo' | 'consciente-com-a-água' | 'seguro-para-corais')[];
+    suitableSkinTypes: ('oleosa' | 'seca' | 'normal' | 'mista' | 'sensível' | 'com-acne' | 'todos' | 'danificado')[];
 };
 
 export type Challenge = {
@@ -53,14 +55,18 @@ export type PointActivity = {
 
 export type Order = {
     id: string;
-    date: string;
+    userId: string;
+    createdAt: Date | Timestamp;
     status: 'Entregue' | 'Em Processamento' | 'Enviado';
     total: number;
-    items: { 
-        productId: string;
-        name: string;
-        quantity: number;
-    }[];
+    items: OrderItem[];
+};
+
+export type OrderItem = { 
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
 };
 
 export type WishlistItem = {
@@ -68,4 +74,4 @@ export type WishlistItem = {
     productId: string;
     name: string;
     imageUrl: string;
-}; 
+};
