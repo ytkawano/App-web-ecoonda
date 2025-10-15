@@ -52,7 +52,12 @@ export default function EcoPointsPage() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (user && firestore) {
+      if (!user || !firestore) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
         const userDocRef = doc(firestore, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) {
@@ -68,9 +73,13 @@ export default function EcoPointsPage() {
           });
           setUserChallenges(challengesWithProgress);
         }
+      } catch (error) {
+          console.error("Failed to fetch user data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     if (!authLoading) {
       fetchUserData();
     }
