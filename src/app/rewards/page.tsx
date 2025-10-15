@@ -1,13 +1,41 @@
 'use client';
 
 import { userImpact, rewards, pointHistory } from '@/lib/data';
+import { useCart } from '@/context/CartContext';
 import { Ticket, History, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 
 export default function RewardsPage() {
-  const userPoints = userImpact.pointsEarned;
+  // TODO: Replace with real user points from Firestore
+  const [userPoints, setUserPoints] = useState(userImpact.pointsEarned);
+  const { applyCoupon } = useCart();
+  const { toast } = useToast();
+
+  const handleRedeem = (pointsRequired: number, title: string) => {
+    if (userPoints >= pointsRequired) {
+      setUserPoints(prevPoints => prevPoints - pointsRequired);
+
+      const discountValue = parseInt(title.replace(/[^0-9]/g, ''), 10);
+      const couponCode = `${title.split(" ")[0].toUpperCase()}${discountValue}`;
+
+      applyCoupon({ code: couponCode, discount: discountValue });
+
+      toast({
+        title: "Recompensa Resgatada!",
+        description: `O cupom ${couponCode} foi aplicado ao seu carrinho.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Pontos Insuficientes",
+        description: "Você não tem pontos suficientes para resgatar esta recompensa.",
+      });
+    }
+  };
 
   return (
     <div className="bg-background min-h-screen text-foreground">
@@ -59,6 +87,7 @@ export default function RewardsPage() {
                       <Button 
                         disabled={!canRedeem} 
                         className="w-full"
+                        onClick={() => handleRedeem(reward.pointsRequired, reward.title)}
                       >
                         {canRedeem ? 'Resgatar Agora' : 'Pontos Insuficientes'}
                       </Button>

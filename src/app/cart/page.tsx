@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Trash2 } from 'lucide-react';
+import { ShoppingCart, Trash2, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalItems, totalPrice, subtotal, coupon, removeCoupon } = useCart();
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -74,8 +75,20 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>R${totalPrice.toFixed(2).replace('.', ',')}</span>
+                  <span>R${subtotal.toFixed(2).replace('.', ',')}</span>
                 </div>
+                {coupon && (
+                  <div className="flex justify-between items-center text-accent">
+                    <div className="flex items-center gap-2">
+                      <span>Cupom de Desconto:</span>
+                       <Badge variant="secondary">{coupon.code}</Badge>
+                    </div>
+                    <span>-R${(subtotal - totalPrice).toFixed(2).replace('.', ',')}</span>
+                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={removeCoupon}>
+                        <XCircle className="h-4 w-4" />
+                     </Button>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Frete</span>
                   <span>Grátis</span>

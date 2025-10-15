@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 import { placeholderImages } from '@/lib/placeholder-images.json';
+import { Badge } from '@/components/ui/badge';
 
 const imageMap = placeholderImages.reduce((acc, img) => {
   acc[img.id] = img.imageUrl;
@@ -20,7 +21,7 @@ const imageMap = placeholderImages.reduce((acc, img) => {
 }, {} as Record<string, string>);
 
 export default function CheckoutPage() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, totalPrice, subtotal, coupon, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -141,8 +142,14 @@ export default function CheckoutPage() {
               <div className="space-y-2">
                  <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>R${totalPrice.toFixed(2).replace('.', ',')}</span>
+                  <span>R${subtotal.toFixed(2).replace('.', ',')}</span>
                 </div>
+                 {coupon && (
+                  <div className="flex justify-between items-center text-accent text-sm">
+                    <span>Cupom ({coupon.code})</span>
+                    <span>-R${(subtotal - totalPrice).toFixed(2).replace('.', ',')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span>Frete</span>
                   <span>Grátis</span>

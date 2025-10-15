@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import type { Product } from '@/lib/types';
 
@@ -10,7 +10,7 @@ export interface CartItem extends Product {
 
 interface Coupon {
     code: string;
-    discount: number; // Pode ser um valor percentual ou fixo
+    discount: number;
 }
 
 interface CartContextType {
@@ -20,6 +20,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
+  subtotal: number;
   totalPrice: number;
   coupon: Coupon | null;
   applyCoupon: (coupon: Coupon) => void;
@@ -77,12 +78,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCoupon(null);
   };
   
-  const applyCoupon = (coupon: Coupon) => {
-      setCoupon(coupon);
-      toast({
-          title: "Cupom aplicado!",
-          description: `Desconto de ${coupon.discount}% foi aplicado.`,
-      })
+  const applyCoupon = (newCoupon: Coupon) => {
+      setCoupon(newCoupon);
   }
 
   const removeCoupon = () => {
@@ -97,8 +94,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const calculateTotalPrice = () => {
       if(coupon) {
-          const discountAmount = (subtotal * coupon.discount) / 100;
-          return subtotal - discountAmount;
+          const discountAmount = subtotal * (coupon.discount / 100);
+          return Math.max(0, subtotal - discountAmount);
       }
       return subtotal;
   }
@@ -113,6 +110,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateQuantity,
         clearCart,
         totalItems,
+        subtotal,
         totalPrice,
         coupon,
         applyCoupon,
