@@ -1,92 +1,144 @@
 'use client';
 
-import Link from 'next/link';
-import { User, Mail, Phone, MapPin, Award, Shield, Recycle, Sprout, Droplets, Leaf, Star } from 'lucide-react';
-import { impactBadges } from '@/lib/data';
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-
-const iconComponents: { [key: string]: React.ElementType } = {
-    Sprout,
-    Shield,
-    Recycle,
-    Award,
-    Droplets,
-    Leaf,
-    Star
-  };
-
-const UserInfoLine = ({ icon: Icon, text }: { icon: React.ElementType, text: string | null | undefined }) => (
-  <div className="flex items-center text-muted-foreground">
-    <Icon className="h-5 w-5 mr-3 text-accent" />
-    <span>{text || 'Não informado'}</span>
-  </div>
-);
+import { updateProfile } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const { user, loading: authLoading } = useAuth();
+  const [displayName, setDisplayName] = useState('');
+  const [photoURL, setPhotoURL] = useState('');
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
-    const { user, loading } = useAuth();
-    const earnedBadges = impactBadges.slice(0, 4);
-
-    if (loading) {
-        return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setPhotoURL(user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`);
+      
+      const fetchUserData = async () => {
+          const userDocRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+              setAddress(docSnap.data().address || '');
+          }
+      };
+      fetchUserData();
     }
+  }, [user]);
 
-    if (!user) {
-        return <div className="flex h-screen items-center justify-center">Por favor, faça login para ver seu perfil.</div>;
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
+
+    try {
+      // Update Firebase Auth profile
+      await updateProfile(user, { displayName, photoURL });
+
+      // Update address in Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { address }, { merge: true });
+
+      toast({
+        title: 'Perfil Atualizado!',
+        description: 'Suas informações foram salvas com sucesso.',
+      });
+      // A small delay to let the user read the toast before redirecting
+      setTimeout(() => router.push('/account'), 1000); 
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar',
+        description: 'Não foi possível salvar suas informações. Tente novamente.',
+      });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  if (authLoading) {
+    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Por favor, faça login para editar seu perfil.
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <div className="container mx-auto max-w-4xl px-4 py-16">
-        <div className="bg-card p-8 rounded-xl shadow-lg">
-            
-            {/* Profile Header */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
-                <img 
-                    src={user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
-                    alt="Foto do Perfil" 
-                    className="w-32 h-32 rounded-full border-4 border-primary mb-6 sm:mb-0 sm:mr-8"
+    <div className="container mx-auto max-w-2xl px-4 py-12">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-3xl">Editar Perfil</CardTitle>
+          <CardDescription>Atualize suas informações pessoais abaixo.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleProfileUpdate}>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+                 <img
+                    src={photoURL || `https://i.pravatar.cc/150?u=${user.uid}`}
+                    alt="Foto do Perfil"
+                    className="h-32 w-32 rounded-full border-4 border-primary object-cover"
                 />
-                <div className="flex-grow">
-                    <h1 className="font-headline text-4xl font-bold text-primary">{user.displayName || 'Usuário'}</h1>
-                    <p className="text-lg text-muted-foreground mt-1">Membro desde {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric'}) : 'data desconhecida'}</p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                        <UserInfoLine icon={Mail} text={user.email} />
-                        <UserInfoLine icon={Phone} text={user.phoneNumber} />
-                        <UserInfoLine icon={MapPin} text="Rua das Flores, 123, São Paulo, SP" />
-                    </div>
+                <div className="w-full space-y-2">
+                    <Label htmlFor="photoURL">URL da Foto de Perfil</Label>
+                    <Input
+                        id="photoURL"
+                        value={photoURL}
+                        onChange={(e) => setPhotoURL(e.target.value)}
+                        placeholder="https://exemplo.com/sua-foto.jpg"
+                    />
                 </div>
             </div>
 
-            <hr className="my-8 border-border" />
-
-            {/* Badges Section */}
-            <div>
-                <h2 className="font-headline text-2xl font-bold text-primary mb-6">Meus Emblemas</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 text-center">
-                {earnedBadges.map((badge) => {
-                    const Icon = iconComponents[badge.icon];
-                    return (
-                        <div key={badge.name} className="flex flex-col items-center p-4 bg-background rounded-lg hover:shadow-md transition-shadow">
-                            <div className="p-3 bg-accent rounded-full mb-2">
-                                {Icon && <Icon className="h-10 w-10 text-accent-foreground" />}
-                            </div>
-                            <p className="font-semibold text-sm">{badge.name}</p>
-                            <p className="text-xs text-muted-foreground hidden md:block">{badge.description}</p>
-                        </div>
-                    );
-                })}
-                 <Link href="/ecopoints" className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
-                    <Award className="h-10 w-10 mb-2" />
-                    <p className="font-semibold text-sm">Veja todos</p>
-                 </Link>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Nome Completo</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+              />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="address">Endereço</Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Rua, número, bairro, cidade, estado"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail (não pode ser alterado)</Label>
+              <Input id="email" value={user.email || ''} disabled />
             </div>
 
-        </div>
-      </div>
+             <Button type="submit" disabled={loading} className="w-full">
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </CardContent>
+        </form>
+      </Card>
     </div>
   );
 }

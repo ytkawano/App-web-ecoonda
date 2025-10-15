@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import OrderHistory from '@/components/dashboard/OrderHistory';
 import { useAuth } from '@/context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 const iconComponents: { [key: string]: React.ElementType } = {
@@ -57,8 +59,22 @@ const AccountSection = ({ icon: Icon, title, description, link, linkText, childr
 
 export default function AccountPage() {
     const { user, loading } = useAuth();
+    const [address, setAddress] = useState('Não informado');
     const userPoints = userImpact.pointsEarned;
     const earnedBadges = impactBadges.slice(0, 4);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (user) {
+                const userDocRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    setAddress(docSnap.data().address || 'Não informado');
+                }
+            }
+        };
+        fetchUserData();
+    }, [user]);
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Carregando...</div>;
@@ -173,7 +189,7 @@ export default function AccountPage() {
                 <div className="space-y-3">
                     <p className="font-semibold">{user.displayName || 'Usuário'}</p>
                     <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <p className="text-sm text-muted-foreground">Rua das Flores, 123, São Paulo, SP</p>
+                    <p className="text-sm text-muted-foreground">{address}</p>
                 </div>
             </AccountSection>
         </div>
