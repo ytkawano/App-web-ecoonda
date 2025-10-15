@@ -66,34 +66,43 @@ export default function AccountPage() {
 
     useEffect(() => {
         const fetchUserData = async () => {
-            if (user && firestore) {
-                const userDocRef = doc(firestore, 'users', user.uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    setUserData(docSnap.data() as UserProfile);
+            if (!authLoading) {
+                if (user && firestore) {
+                    const userDocRef = doc(firestore, 'users', user.uid);
+                    try {
+                        const docSnap = await getDoc(userDocRef);
+                        if (docSnap.exists()) {
+                            setUserData(docSnap.data() as UserProfile);
+                        } else {
+                            // Create a default profile if it doesn't exist, useful for old users
+                            const defaultProfile: UserProfile = {
+                                uid: user.uid,
+                                email: user.email!,
+                                displayName: user.displayName || 'Usuário',
+                                photoURL: user.photoURL || '',
+                                address: { street: '', number: '', city: '', state: '' },
+                                ecoPoints: 0,
+                                plasticSaved: 0,
+                                co2Avoided: 0,
+                                returnsMade: 0,
+                                earnedBadges: [],
+                                purchaseHistory: [],
+                            };
+                            setUserData(defaultProfile);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching user data:", error);
+                    } finally {
+                        setLoading(false);
+                    }
                 } else {
-                    // Create a default profile if it doesn't exist
-                    const defaultProfile: UserProfile = {
-                        uid: user.uid,
-                        email: user.email!,
-                        displayName: user.displayName || 'Usuário',
-                        photoURL: user.photoURL || '',
-                        address: { street: '', number: '', city: '', state: '' },
-                        ecoPoints: 0,
-                        plasticSaved: 0,
-                        co2Avoided: 0,
-                        returnsMade: 0,
-                        earnedBadges: [],
-                        purchaseHistory: [],
-                    };
-                    setUserData(defaultProfile);
+                    setLoading(false);
                 }
             }
-            setLoading(false);
         };
-        if (!authLoading) {
-            fetchUserData();
-        }
+        
+        fetchUserData();
+
     }, [user, authLoading, firestore]);
 
     if (authLoading || loading) {
@@ -117,12 +126,23 @@ export default function AccountPage() {
         )
     }
 
-    if (!user || !userData) {
+    if (!user) {
         return <div className="flex h-screen items-center justify-center">Por favor, faça login para ver sua conta.</div>;
     }
 
-    const addressString = [userData.address?.street, userData.address?.number, userData.address?.city, userData.address?.state].filter(Boolean).join(', ') || 'Não informado';
-    const earnedBadges = impactBadges.filter(b => (userData.earnedBadges || []).includes(b.name));
+    const currentData = userData || {
+        displayName: user.displayName,
+        email: user.email,
+        address: { street: '', number: '', city: '', state: '' },
+        ecoPoints: 0,
+        plasticSaved: 0,
+        co2Avoided: 0,
+        returnsMade: 0,
+        earnedBadges: [],
+    };
+
+    const addressString = [currentData.address?.street, currentData.address?.number, currentData.address?.city, currentData.address?.state].filter(Boolean).join(', ') || 'Não informado';
+    const earnedBadges = impactBadges.filter(b => (currentData.earnedBadges || []).includes(b.name));
 
 
   return (
@@ -139,7 +159,7 @@ export default function AccountPage() {
                 />
             </div>
             <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">
-              Bem-vindo(a), {user.displayName || 'Usuário'}!
+              Bem-vindo(a), {currentData.displayName || 'Usuário'}!
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
               Este é o seu painel pessoal. Acompanhe seu impacto e suas atividades.
@@ -152,7 +172,7 @@ export default function AccountPage() {
             <AccountSection
                 icon={Leaf}
                 title="EcoPoints & Emblemas"
-                description={`Você tem ${userData.ecoPoints} pontos para usar.`}
+                description={`Você tem ${currentData.ecoPoints} pontos para usar.`}
                 link="/ecopoints"
                 linkText='Ver todos emblemas'
             >
@@ -160,17 +180,17 @@ export default function AccountPage() {
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div className="flex flex-col items-center gap-1">
                             <Shield className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userData.plasticSaved / 1000} kg</span>
+                            <span className="font-bold text-lg">{(currentData.plasticSaved / 1000).toFixed(2)} kg</span>
                             <span className="text-xs text-muted-foreground">Plástico Evitado</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
                             <Recycle className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userData.returnsMade}</span>
+                            <span className="font-bold text-lg">{currentData.returnsMade}</span>
                             <span className="text-xs text-muted-foreground">Devoluções</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
                             <Sprout className="h-8 w-8 text-accent" />
-                            <span className="font-bold text-lg">{userData.co2Avoided} kg</span>
+                            <span className="font-bold text-lg">{currentData.co2Avoided} kg</span>
                             <span className="text-xs text-muted-foreground">CO₂ Evitado</span>
                         </div>
                     </div>
@@ -186,6 +206,7 @@ export default function AccountPage() {
                                   </div>
                               )
                           })}
+                           {earnedBadges.length === 0 && <p className="text-xs text-muted-foreground">Nenhum emblema ainda.</p>}
                       </div>
                     </div>
                 </div>
@@ -227,8 +248,8 @@ export default function AccountPage() {
                 linkText='Editar perfil'
             >
                 <div className="space-y-3">
-                    <p className="font-semibold">{user.displayName || 'Usuário'}</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="font-semibold">{currentData.displayName || 'Usuário'}</p>
+                    <p className="text-sm text-muted-foreground">{currentData.email}</p>
                     <p className="text-sm text-muted-foreground">{addressString}</p>
                 </div>
             </AccountSection>
@@ -238,5 +259,3 @@ export default function AccountPage() {
     </div>
   );
 }
-
-    
