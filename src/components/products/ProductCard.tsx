@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, ShoppingBag } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
+import { useToast } from '../ui/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -18,14 +19,17 @@ export default function ProductCard({ product }: ProductCardProps) {
   const placeholder = placeholderImages.find((p) => p.id === product.imageId);
   const { isProductInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { toast } = useToast();
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isProductInWishlist(product.id)) {
       removeFromWishlist(product.id);
+      toast({ title: "Produto removido da sua lista de desejos." });
     } else {
       addToWishlist(product.id);
+      toast({ title: "Produto adicionado à sua lista de desejos!" });
     }
   };
 

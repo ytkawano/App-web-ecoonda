@@ -84,7 +84,6 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         if (prev.includes(productId)) return prev;
         const newWishlist = [...prev, productId];
         updateFirestoreWishlist(productId, 'add');
-        toast({ title: "Produto adicionado à sua lista de desejos!" });
         return newWishlist;
     });
   };
@@ -95,7 +94,6 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         if (!prev.includes(productId)) return prev;
         const newWishlist = prev.filter((id) => id !== productId);
         updateFirestoreWishlist(productId, 'remove');
-        toast({ title: "Produto removido da sua lista de desejos." });
         return newWishlist;
     });
   };
