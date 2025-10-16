@@ -1,13 +1,11 @@
 
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,20 +18,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { fetchRecommendations } from '@/app/recommendations/actions';
-import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
-import { Loader2, Wand2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // This function filters products based on a simple scoring mechanism.
 function getScoredRecommendations(
   products: Product[],
   skinType: string,
-  sustainabilityPreferences: string[],
+  sustainabilityPreferences: Set<string>,
   purchaseHistory: string[]
 ): Product[] {
   const scoredProducts = products
@@ -45,9 +38,10 @@ function getScoredRecommendations(
         score += 3;
       }
       // Add score for each matching sustainability attribute
-      score += product.sustainabilityAttributes.filter(attr =>
-        sustainabilityPreferences.includes(attr)
-      ).length;
+      const matchingPrefs = product.sustainabilityAttributes.filter(attr =>
+        sustainabilityPreferences.has(attr)
+      );
+      score += matchingPrefs.length;
       
       return { product, score };
     });
@@ -58,7 +52,6 @@ function getScoredRecommendations(
     .slice(0, 3)
     .map(item => item.product);
 }
-
 
 interface RecommendationEngineProps {
   allProducts: Product[];
@@ -88,45 +81,15 @@ const sustainabilityOptions = [
   { value: 'reef-safe', label: 'Seguro para corais' }
 ];
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full wave-animate">
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Encontrando Seus Produtos...
-        </>
-      ) : (
-        <>
-          <Wand2 className="mr-2 h-4 w-4" />
-          Obter Recomendações
-        </>
-      )}
-    </Button>
-  );
-}
 
 export default function RecommendationEngine({
   allProducts,
   initialPreferences,
 }: RecommendationEngineProps) {
-  const [state, formAction] = useActionState(fetchRecommendations, { key: Date.now() });
   const [skinType, setSkinType] = useState(initialPreferences.skinType);
   const [sustainabilityPrefs, setSustainabilityPrefs] = useState(
     new Set(initialPreferences.sustainabilityPreferences)
   );
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (state.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: state.error,
-      });
-    }
-  }, [state.error, state.key, toast]);
 
   const handleCheckboxChange = (pref: string, checked: boolean) => {
     setSustainabilityPrefs((prev) => {
@@ -140,18 +103,19 @@ export default function RecommendationEngine({
     });
   };
 
- const recommendedProducts = state.preferences ? getScoredRecommendations(
-    allProducts,
-    state.preferences.skinType,
-    state.preferences.sustainabilityPreferences,
-    state.preferences.purchaseHistory
- ) : [];
+  const recommendedProducts = useMemo(() => {
+    return getScoredRecommendations(
+      allProducts,
+      skinType,
+      sustainabilityPrefs,
+      initialPreferences.purchaseHistory
+    );
+  }, [allProducts, skinType, sustainabilityPrefs, initialPreferences.purchaseHistory]);
 
 
   return (
     <div>
       <Card>
-        <form action={formAction}>
           <CardHeader>
             <CardTitle className="font-headline">Seu Perfil</CardTitle>
             <CardDescription>
@@ -196,26 +160,17 @@ export default function RecommendationEngine({
                 ))}
               </div>
             </div>
-            {initialPreferences.purchaseHistory.map(id => (
-                <input key={id} type="hidden" name="purchaseHistory" value={id} />
-            ))}
           </CardContent>
-          <CardFooter>
-            <SubmitButton />
-          </CardFooter>
-        </form>
       </Card>
 
       <AnimatePresence>
-        {state.preferences && (
-          <motion.div
-            key={state.key}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+        <motion.div
+            key={skinType + Array.from(sustainabilityPrefs).join('-')}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
-            className="mt-12 overflow-hidden"
-          >
+            className="mt-12"
+        >
               <div className="text-center mb-8">
                   <h2 className="font-headline text-3xl font-bold text-primary">
                       Seus Resultados Personalizados
@@ -234,7 +189,6 @@ export default function RecommendationEngine({
                   <p className='text-center text-muted-foreground'>Nenhuma recomendação encontrada para suas preferências específicas. Tente ajustar seu perfil!</p>
               )}
           </motion.div>
-        )}
       </AnimatePresence>
     </div>
   );
