@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState } from 'react';
@@ -20,13 +21,44 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { fetchRecommendations, getScoredRecommendations } from '@/app/recommendations/actions';
+import { fetchRecommendations } from '@/app/recommendations/actions';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
+
+// This function filters products based on a simple scoring mechanism.
+function getScoredRecommendations(
+  products: Product[],
+  skinType: string,
+  sustainabilityPreferences: string[],
+  purchaseHistory: string[]
+): Product[] {
+  const scoredProducts = products
+    .filter(p => !purchaseHistory.includes(p.id))
+    .map(product => {
+      let score = 0;
+      // High score for matching skin type
+      if (product.suitableSkinTypes.includes(skinType) || product.suitableSkinTypes.includes('todos')) {
+        score += 3;
+      }
+      // Add score for each matching sustainability attribute
+      score += product.sustainabilityAttributes.filter(attr =>
+        sustainabilityPreferences.includes(attr)
+      ).length;
+      
+      return { product, score };
+    });
+  
+  // Sort by score and return the top 3, even if the score is 0
+  return scoredProducts
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => item.product);
+}
+
 
 interface RecommendationEngineProps {
   allProducts: Product[];
