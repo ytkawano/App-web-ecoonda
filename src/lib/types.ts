@@ -43,6 +43,7 @@ export type UserProfile = {
     returnsMade: number;
     earnedBadges: string[];
     purchaseHistory: string[];
+    wishlist: string[];
 };
 
 export type ImpactBadge = {

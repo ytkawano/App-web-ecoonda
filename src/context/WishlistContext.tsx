@@ -1,46 +1,103 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useAuth } from '@/firebase';
-import { useToast } from "@/components/ui/use-toast"
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useAuth, useFirestore } from '@/firebase';
+import { useToast } from "@/components/ui/use-toast";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { UserProfile } from '@/lib/types';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 interface WishlistContextType {
   wishlist: string[];
   addToWishlist: (productId: string) => void;
   removeFromWishlist: (productId: string) => void;
   isProductInWishlist: (productId: string) => boolean;
+  loading: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
-  const auth = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const firestore = useFirestore();
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const { toast } = useToast()
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
+  const fetchWishlist = useCallback(async () => {
+    if (user && firestore) {
+      setLoading(true);
+      const userDocRef = doc(firestore, 'users', user.uid);
+      try {
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data() as UserProfile;
+          setWishlist(userData.wishlist || []);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else if (!authLoading) {
+      setWishlist([]);
+      setLoading(false);
+    }
+  }, [user, firestore, authLoading]);
 
   useEffect(() => {
-    if (auth?.currentUser) {
-      // Here you can load the user's wishlist from a database
-      // and set the wishlist state.
-    }
-  }, [auth]);
+    fetchWishlist();
+  }, [fetchWishlist]);
+
+  const updateFirestoreWishlist = async (productId: string, operation: 'add' | 'remove') => {
+    if (!user || !firestore) return;
+
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const updatePayload = {
+        wishlist: operation === 'add' ? arrayUnion(productId) : arrayRemove(productId)
+    };
+    
+    updateDoc(userDocRef, updatePayload).catch(serverError => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: updatePayload,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Revert local state on failure
+        fetchWishlist();
+        toast({
+            variant: "destructive",
+            title: "Erro na Lista de Desejos",
+            description: "Não foi possível atualizar sua lista de desejos.",
+        });
+    });
+  }
 
   const addToWishlist = (productId: string) => {
-    if (!auth?.currentUser) {
+    if (!user) {
         toast({ title: "Faça login para adicionar à sua lista de desejos." });
         return;
     }
-    setWishlist((prevWishlist) => [...prevWishlist, productId]);
-    toast({ title: "Produto adicionado à sua lista de desejos!" });
+    setWishlist((prev) => {
+        if (prev.includes(productId)) return prev;
+        const newWishlist = [...prev, productId];
+        updateFirestoreWishlist(productId, 'add');
+        toast({ title: "Produto adicionado à sua lista de desejos!" });
+        return newWishlist;
+    });
   };
 
   const removeFromWishlist = (productId: string) => {
-    setWishlist((prevWishlist) =>
-      prevWishlist.filter((id) => id !== productId)
-    );
-    toast({ title: "Produto removido da sua lista de desejos." });
-
+    if (!user) return;
+    setWishlist((prev) => {
+        if (!prev.includes(productId)) return prev;
+        const newWishlist = prev.filter((id) => id !== productId);
+        updateFirestoreWishlist(productId, 'remove');
+        toast({ title: "Produto removido da sua lista de desejos." });
+        return newWishlist;
+    });
   };
 
   const isProductInWishlist = (productId: string) => {
@@ -49,7 +106,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <WishlistContext.Provider
-      value={{ wishlist, addToWishlist, removeFromWishlist, isProductInWishlist }}
+      value={{ wishlist, addToWishlist, removeFromWishlist, isProductInWishlist, loading }}
     >
       {children}
     </WishlistContext.Provider>

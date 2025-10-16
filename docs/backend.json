@@ -23,7 +23,8 @@
         "co2Avoided": { "type": "number", "description": "Kilograms of CO2 emissions avoided." },
         "returnsMade": { "type": "number", "description": "Number of packaging returns made." },
         "earnedBadges": { "type": "array", "items": { "type": "string" } },
-        "purchaseHistory": { "type": "array", "items": { "type": "string" }, "description": "Array of product IDs." }
+        "purchaseHistory": { "type": "array", "items": { "type": "string" }, "description": "Array of product IDs." },
+        "wishlist": { "type": "array", "items": { "type": "string" }, "description": "Array of product IDs in the user's wishlist." }
       },
       "required": ["uid", "email"]
     },

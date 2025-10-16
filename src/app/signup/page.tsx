@@ -63,6 +63,7 @@ export default function SignupPage() {
         returnsMade: 0,
         earnedBadges: [],
         purchaseHistory: [],
+        wishlist: [],
       };
 
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);
