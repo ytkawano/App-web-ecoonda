@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, useStorage } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const firestore = useFirestore();
+  const storage = useStorage();
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [address, setAddress] = useState({
@@ -77,12 +78,11 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !firestore) return;
+    if (!user || !firestore || !storage) return;
 
     setLoading(true);
     let newPhotoURL = photoURL;
     let userProfileData: Partial<UserProfile>;
-    const storage = getStorage();
 
     try {
         if (imageFile) {
