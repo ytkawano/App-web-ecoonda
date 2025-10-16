@@ -10,7 +10,7 @@ import { useAuth } from '@/firebase';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,6 +139,9 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] pt-10">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Menu Principal</SheetTitle>
+              </SheetHeader>
               <Logo className="mb-8 ml-4" />
               <nav className="flex flex-col gap-2">
                 <NavLinks isMobile />
