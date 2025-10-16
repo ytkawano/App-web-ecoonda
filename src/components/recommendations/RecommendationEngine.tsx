@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { fetchRecommendations } from '@/app/recommendations/actions';
+import { fetchRecommendations, getScoredRecommendations } from '@/app/recommendations/actions';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import ProductCard from '../products/ProductCard';
@@ -108,10 +108,12 @@ export default function RecommendationEngine({
     });
   };
 
- const recommendedProducts =
-    state.recommendations
-      ?.map(rec => allProducts.find(p => p.id === rec.productId))
-      .filter((p): p is Product => p !== undefined) || [];
+ const recommendedProducts = state.preferences ? getScoredRecommendations(
+    allProducts,
+    state.preferences.skinType,
+    state.preferences.sustainabilityPreferences,
+    state.preferences.purchaseHistory
+ ) : [];
 
 
   return (
@@ -173,7 +175,7 @@ export default function RecommendationEngine({
       </Card>
 
       <AnimatePresence>
-        {state.recommendations && (
+        {state.preferences && (
           <motion.div
             key={state.key}
             initial={{ opacity: 0, height: 0 }}

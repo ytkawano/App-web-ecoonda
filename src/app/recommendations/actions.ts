@@ -1,7 +1,5 @@
 'use server';
 
-import { collection, getDocs } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
 import { Product } from '@/lib/types';
 import { z } from 'zod';
 
@@ -11,24 +9,16 @@ const recommendationSchema = z.object({
   purchaseHistory: z.array(z.string()),
 });
 
+type UserPreferences = z.infer<typeof recommendationSchema>;
+
 export type RecommendationState = {
-  recommendations?: {
-    productId: string;
-  }[];
+  preferences?: UserPreferences;
   error?: string;
   key?: number;
 };
 
-// This function fetches all products from Firestore
-async function getAllProducts(): Promise<Product[]> {
-  const { firestore } = initializeFirebase();
-  const productsCollection = collection(firestore, 'products');
-  const productSnapshot = await getDocs(productsCollection);
-  return productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
-}
-
 // This function filters products based on a simple scoring mechanism.
-function getScoredRecommendations(
+export function getScoredRecommendations(
   products: Product[],
   skinType: string,
   sustainabilityPreferences: string[],
@@ -72,26 +62,11 @@ export async function fetchRecommendations(
   }
 
   try {
-    const allProducts = await getAllProducts();
-    const { skinType, sustainabilityPreferences, purchaseHistory } = validatedFields.data;
-
-    // Get recommendations using the new scoring logic
-    const recommendedProducts = getScoredRecommendations(
-        allProducts, 
-        skinType,
-        sustainabilityPreferences,
-        purchaseHistory
-    );
-    
-    if (recommendedProducts.length > 0) {
-      return { 
-        recommendations: recommendedProducts.map(p => ({ productId: p.id })), 
+    return { 
+        preferences: validatedFields.data, 
         key: Date.now() 
-      };
-    } else {
-      // This case should be less frequent now, but it's a good fallback.
-      return { error: 'Não foi possível encontrar produtos na nossa base de dados.', key: Date.now() };
-    }
+    };
+
   } catch (e) {
     console.error(e);
     return { error: 'Ocorreu um erro inesperado ao gerar suas recomendações.', key: Date.now() };
