@@ -90,6 +90,8 @@ export default function ProfilePage() {
             const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
             const uploadResult = await uploadBytes(storageRef, imageFile);
             newPhotoURL = await getDownloadURL(uploadResult.ref);
+            setPhotoURL(newPhotoURL);
+            setImagePreview(newPhotoURL);
         }
 
         setLoadingMessage('Atualizando perfil...');
