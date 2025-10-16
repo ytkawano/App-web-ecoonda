@@ -92,7 +92,7 @@ export default function RecommendationEngine({
 }: RecommendationEngineProps) {
   const [state, formAction] = useActionState<RecommendationState, FormData>(
     fetchRecommendations,
-    { key: 0, preferences: initialPreferences }
+    { key: 0 } // Start with no preferences to prevent initial recommendation
   );
 
   const recommendedProducts = useMemo(() => {
@@ -109,6 +109,10 @@ export default function RecommendationEngine({
   return (
     <div>
       <form action={formAction}>
+        {/* Pass purchase history as hidden inputs so the server action has it */}
+        {initialPreferences.purchaseHistory.map(id => (
+            <input key={id} type="hidden" name="purchaseHistory" value={id} />
+        ))}
         <Card>
             <CardHeader>
               <CardTitle className="font-headline">Seu Perfil</CardTitle>
@@ -162,6 +166,8 @@ export default function RecommendationEngine({
         </div>
       </form>
 
+    {/* Only render recommendations after the form has been submitted */}
+    {state.preferences && (
       <AnimatePresence>
         <motion.div
             key={state.key}
@@ -189,6 +195,7 @@ export default function RecommendationEngine({
               )}
           </motion.div>
       </AnimatePresence>
+    )}
     </div>
   );
 }
