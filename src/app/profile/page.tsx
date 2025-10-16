@@ -82,70 +82,71 @@ export default function ProfilePage() {
 
     setLoading(true);
     let newPhotoURL = photoURL;
-    let userProfileData: Partial<UserProfile>;
 
     try {
-        if (imageFile) {
-            setLoadingMessage('Enviando imagem...');
-            const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
-            const uploadResult = await uploadBytes(storageRef, imageFile);
-            newPhotoURL = await getDownloadURL(uploadResult.ref);
-            setPhotoURL(newPhotoURL);
-            setImagePreview(newPhotoURL);
+      // 1. Upload image if a new one is selected
+      if (imageFile) {
+        setLoadingMessage('Enviando imagem...');
+        const storageRef = ref(storage, `profile-pictures/${user.uid}/${imageFile.name}`);
+        const uploadResult = await uploadBytes(storageRef, imageFile);
+        newPhotoURL = await getDownloadURL(uploadResult.ref);
+        
+        // Update state to show the new image immediately
+        setPhotoURL(newPhotoURL);
+        setImagePreview(newPhotoURL);
+      }
+
+      // 2. Update Firebase Auth profile
+      setLoadingMessage('Atualizando perfil...');
+      await updateProfile(user, {
+        displayName,
+        photoURL: newPhotoURL,
+      });
+
+      // 3. Prepare data for Firestore
+      const userProfileData: Partial<UserProfile> = {
+        uid: user.uid,
+        email: user.email!,
+        displayName: displayName,
+        photoURL: newPhotoURL,
+        address: address,
+      };
+
+      // 4. Save data to Firestore
+      setLoadingMessage('Salvando dados...');
+      const docRef = doc(firestore, 'users', user.uid);
+      await setDoc(docRef, userProfileData, { merge: true });
+
+      toast({
+        title: 'Perfil Atualizado!',
+        description: 'Suas informações foram salvas com sucesso.',
+      });
+
+      setTimeout(() => router.push('/account'), 1000);
+
+    } catch (error: any) {
+        console.error('Erro ao atualizar o perfil:', error);
+        
+        // Emit a contextual error if it's a permission issue with Firestore
+        if (error.code && error.code.includes('permission-denied')) {
+             const permissionError = new FirestorePermissionError({
+                path: `users/${user.uid}`,
+                operation: 'update',
+                requestResourceData: { displayName, photoURL: newPhotoURL, address },
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }
 
-        setLoadingMessage('Atualizando perfil...');
-        await updateProfile(user, { 
-            displayName, 
-            photoURL: newPhotoURL 
-        });
-
-        userProfileData = {
-            uid: user.uid,
-            email: user.email!,
-            displayName: displayName,
-            photoURL: newPhotoURL,
-            address: address
-        };
-
-        const docRef = doc(firestore, 'users', user.uid);
-        
-        setDoc(docRef, userProfileData, { merge: true })
-          .then(() => {
-              toast({
-                  title: 'Perfil Atualizado!',
-                  description: 'Suas informações foram salvas com sucesso.',
-              });
-              setLoading(false);
-              setTimeout(() => router.push('/account'), 1000); 
-          })
-          .catch(async (serverError) => {
-              const permissionError = new FirestorePermissionError({
-                  path: docRef.path,
-                  operation: 'update',
-                  requestResourceData: userProfileData,
-              });
-              errorEmitter.emit('permission-error', permissionError);
-              
-              // We still need to handle the UI feedback for the user
-              toast({
-                  variant: 'destructive',
-                  title: 'Erro de Permissão',
-                  description: 'Você não tem permissão para salvar. Verifique as regras de segurança.',
-              });
-              setLoading(false);
-          });
-
-    } catch (error) {
-        console.error('An unexpected error occurred:', error);
         toast({
             variant: 'destructive',
-            title: 'Erro Inesperado',
-            description: 'Não foi possível completar a operação. Tente novamente.',
+            title: 'Erro ao Atualizar',
+            description: error.message || 'Não foi possível salvar suas alterações. Tente novamente.',
         });
+    } finally {
         setLoading(false);
     }
   };
+
 
   if (authLoading) {
     return <div className="flex h-screen items-center justify-center">Carregando...</div>;
